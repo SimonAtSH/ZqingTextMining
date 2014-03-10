@@ -15,6 +15,7 @@ public class Configuration implements Serializable
 	public String				SourceFileName;
 	public String				ResultFileName;
 	public String 				ResultFolder;
+	public static String		Encode = "UTF-8";
 
 	private Configuration()
 	{}
@@ -67,24 +68,23 @@ public class Configuration implements Serializable
 		{
 			e.printStackTrace();
 		}
-
 	}
 
 	public void ParseArgs(String[] args)
 	{
 		for (int i = 0; i < args.length; i++)
 		{
-			if (args[i].equalsIgnoreCase("-INPUT") )
+			if (args[i].equalsIgnoreCase("-IN") )
 			{
 				this.SourceFileName = args[i + 1];
 			}
 
-			if (args[i].equalsIgnoreCase("-OUTPUT") )
+			if (args[i].equalsIgnoreCase("-OUT") )
 			{
 				this.ResultFileName = args[i + 1];
 			}
 			
-			if(args[i].equalsIgnoreCase("-OutputFolder") )
+			if(args[i].equalsIgnoreCase("-OutFolder") )
 			{
 				this.ResultFolder = args[i+1];
 			}

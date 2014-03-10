@@ -9,7 +9,6 @@ import jxl.write.WritableSheet;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
 import jxl.write.biff.RowsExceededException;
-import zqing.textmining.entity.WordEntity;
 
 public class ExcelExporter extends BaseExporter
 {

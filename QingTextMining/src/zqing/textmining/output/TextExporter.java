@@ -7,9 +7,11 @@ import java.io.OutputStreamWriter;
 public class TextExporter extends BaseExporter
 {
 
-	public TextExporter()
+	public String FileName;
+	public TextExporter(String fileName)
 	{
 		super();
+		FileName = fileName;
 	}
 
 	public void Export(String fileName, String txt)

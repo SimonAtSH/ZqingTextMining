@@ -5,8 +5,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class CSVReader extends BaseReader
 {
@@ -28,7 +26,6 @@ public class CSVReader extends BaseReader
 	{
 		FileName = fileName;
 		String strLine = null;
-		String strCell = null;
 		RowCount = 0; 
 		ColumnCount = 0;
 		try

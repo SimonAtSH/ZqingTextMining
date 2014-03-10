@@ -20,6 +20,7 @@ public class TextMining
 		String strAll = new String();
 		for(String s:srcLines)
 		{
+			s.replaceAll("[\r\n]", ""); //去掉换行符
 			if(!s.trim().isEmpty())	//去掉空行
 				strAll += s + "\n";
 		}
@@ -29,6 +30,10 @@ public class TextMining
 		String[] destLines = strAll.split("\n");		
 		return destLines;
 	}
+	
+	/*
+	 * 把所有的文本行连接为一个String，用来进行断句
+	 */
 	
 	public String GetConnectedString(String[] srcLines)
 	{
