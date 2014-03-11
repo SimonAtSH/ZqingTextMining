@@ -20,7 +20,7 @@ public class TextMining
 		String strAll = new String();
 		for(String s:srcLines)
 		{
-			s.replaceAll("[\r\n]", ""); //去掉换行符
+			//s.replaceAll("[\r\n]", ""); //去掉换行符
 			if(!s.trim().isEmpty())	//去掉空行
 				strAll += s + "\n";
 		}
@@ -40,7 +40,8 @@ public class TextMining
 		StringBuilder sb = new StringBuilder();
 		for(String s:srcLines)
 		{
-			sb.append(s + "\n");
+			//sb.append(s + "\n");
+			sb.append(s);
 		}
 		return sb.toString();
 	}
