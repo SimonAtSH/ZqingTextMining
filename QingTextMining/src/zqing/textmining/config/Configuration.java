@@ -13,6 +13,7 @@ public class Configuration implements Serializable
 	 */
 	private static final long	serialVersionUID	= 1L;
 	public String				SourceFileName;
+	public String				SourceExcelFileName;
 	public String				ResultFileName;
 	public String 				ResultFolder;
 	public static String		Encode = "UTF-8";
@@ -35,7 +36,6 @@ public class Configuration implements Serializable
 
 	public void SerializeToXml()
 	{
-
 		XStream xStream = new XStream();
 		xStream.alias("Configuration", Configuration.class);
 		try
@@ -74,11 +74,14 @@ public class Configuration implements Serializable
 	{
 		for (int i = 0; i < args.length; i++)
 		{
-			if (args[i].equalsIgnoreCase("-IN") )
+			if (args[i].equalsIgnoreCase("-In") )
 			{
 				this.SourceFileName = args[i + 1];
 			}
-
+			if (args[i].equalsIgnoreCase("-InExcel") )
+			{
+				this.SourceExcelFileName = args[i + 1];
+			}
 			if (args[i].equalsIgnoreCase("-OUT") )
 			{
 				this.ResultFileName = args[i + 1];

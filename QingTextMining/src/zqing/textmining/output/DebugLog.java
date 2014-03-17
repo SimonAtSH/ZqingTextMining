@@ -10,7 +10,7 @@ public class DebugLog
 	{
 	}
 	
-	public static SimpleDateFormat   sDateFormat   =   new   SimpleDateFormat("yyyy-MM-dd   hh:mm:ss");
+	public static SimpleDateFormat   sDateFormat   =   new   SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
 	public static void Log(String msg)
 	{

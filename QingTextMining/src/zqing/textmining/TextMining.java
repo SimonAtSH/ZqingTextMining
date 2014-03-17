@@ -1,11 +1,29 @@
 package zqing.textmining;
 
+import java.util.Map;
+import java.util.TreeMap;
+
+import zqing.textmining.entity.WordEntity;
+
 public class TextMining
 {
 
 	public TextMining()
 	{		
 	}
+	
+	public String[] AddtionalWords = {
+			"形容词",
+			"名词", 
+			"复词", 
+			"动词", 
+			"介词", 
+			"时间短语", 
+			"！", 
+			"？", 
+			"\\", 
+			"#", 
+			"字数"};
 
 	/*
 	 * 有些句子末尾以逗号结尾，下一句转到了新的一行，这表示句子并没有结束。所以要把这样的两行文本合并为一行。
@@ -20,7 +38,6 @@ public class TextMining
 		String strAll = new String();
 		for(String s:srcLines)
 		{
-			//s.replaceAll("[\r\n]", ""); //去掉换行符
 			if(!s.trim().isEmpty())	//去掉空行
 				strAll += s + "\n";
 		}
@@ -40,10 +57,83 @@ public class TextMining
 		StringBuilder sb = new StringBuilder();
 		for(String s:srcLines)
 		{
-			//sb.append(s + "\n");
 			sb.append(s);
 		}
 		return sb.toString();
+	}
+	
+	public String[] AddAddiontalWords(String[] srcWords)
+	{
+		int iCount = srcWords.length + AddtionalWords.length;
+		String[] destWords = new String[iCount];
+		int i = 0;
+		for(String s:srcWords)
+			destWords[i++] = s;
+		for(String s: AddtionalWords)
+			destWords[i++] = s;
+		return destWords;
+	}
+	
+	public TreeMap<String, WordEntity> GetWordsDict(String[] words, TreeMap<String, WordEntity> wordsDict)
+	{
+		for (int i=0; i < words.length; i++)
+		{
+			if (!(words[i].trim().isEmpty()))
+			{
+				if (wordsDict.containsKey(words[i]))
+				{
+					WordEntity wEntity = wordsDict.get(words[i]);
+					wEntity.Count++;
+				} else
+				{
+					wordsDict.put(words[i], new WordEntity(words[i], 1));
+				}
+			}
+		}
+		return wordsDict;
+	}
+	
+	public TreeMap<String, WordEntity> GetWordsDict(String[] words, TreeMap<String, WordEntity> wordsDict, int defaultCount)
+	{
+		for (int i=0; i < words.length; i++)
+		{
+			if (!(words[i].trim().isEmpty()))
+			{
+				if (wordsDict.containsKey(words[i]))
+				{
+					WordEntity wEntity = wordsDict.get(words[i]);
+					wEntity.Count++;
+				} else
+				{
+					wordsDict.put(words[i], new WordEntity(words[i], defaultCount));
+				}
+			}
+		}
+		return wordsDict;
+	}	
+	
+	public String GenerateSVMLine(String motion, TreeMap<String, WordEntity> wordsOfLine, TreeMap<String, WordEntity> wordsDict)
+	{
+		String svm = motion;
+		for (Map.Entry<String, WordEntity> entry: wordsOfLine.entrySet()) 
+		{
+			String key = entry.getKey();
+			WordEntity entity = entry.getValue();
+			WordEntity dictEntity = wordsDict.get(key);
+			if(entity != null && dictEntity != null)
+			{
+				svm += String.format(" %d:%d", dictEntity.Index, entity.Count);
+			}
+		}
+		
+		svm += " # ";
+		for (Map.Entry<String, WordEntity> entry: wordsOfLine.entrySet()) 
+		{
+			svm += entry.getKey() + " ";
+		}
+		svm = svm.replace('\n', ' ');
+		svm = svm.replaceAll("\n", "");
+		return svm;
 	}
 
 }
