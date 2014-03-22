@@ -21,7 +21,7 @@ public class TextMining
 			"时间短语", 
 			"！", 
 			"？", 
-			"\\", 
+			"\\\\", 
 			"#", 
 			"字数"};
 
@@ -117,6 +117,7 @@ public class TextMining
 			TreeMap<String, WordEntity> wordsDict, TreeMap<String, WordEntity> posDict)
 	{
 		String svm = motion;
+		//构造词汇部分
 		for (Map.Entry<String, WordEntity> entry: wordsOfLine.entrySet()) 
 		{
 			String key = entry.getKey();
@@ -127,7 +128,7 @@ public class TextMining
 				svm += String.format(" %d:%d", dictEntity.Index, entity.Count);
 			}
 		}
-		
+		//构造词性部分
 		for (Map.Entry<String, WordEntity> entry: posOfLine.entrySet()) 
 		{
 			String key = entry.getKey();

@@ -82,7 +82,7 @@ public class ExcelDataToSVMLight
 			{
 				WordEntity w = posDict.get(s);
 				w.Index = index++;
-			}
+			}			
 			
 			DebugLog.Log("开始生成SVM数据。");
 			String[][] signedLines = excelReader.GetFieldsBySheet(0);
@@ -103,6 +103,9 @@ public class ExcelDataToSVMLight
 				// 统计词性出现次数
 				posMap.clear();
 				posMap = txtMining.GetWordsDict(wps[1], posMap);
+
+				// 加上字数统计
+				posMap.put("字数",  new WordEntity("字数",signedLines[i][1].length()));
 				
 				String svm = txtMining.GenerateSVMLine(motion,wordsMap, posMap, wordsDict, posDict);
 				svmLines.add(svm);
