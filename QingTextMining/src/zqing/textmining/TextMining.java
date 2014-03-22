@@ -112,7 +112,9 @@ public class TextMining
 		return wordsDict;
 	}	
 	
-	public String GenerateSVMLine(String motion, TreeMap<String, WordEntity> wordsOfLine, TreeMap<String, WordEntity> wordsDict)
+	public String GenerateSVMLine(String motion, 
+			TreeMap<String, WordEntity> wordsOfLine, TreeMap<String, WordEntity> posOfLine,
+			TreeMap<String, WordEntity> wordsDict, TreeMap<String, WordEntity> posDict)
 	{
 		String svm = motion;
 		for (Map.Entry<String, WordEntity> entry: wordsOfLine.entrySet()) 
@@ -126,11 +128,26 @@ public class TextMining
 			}
 		}
 		
+		for (Map.Entry<String, WordEntity> entry: posOfLine.entrySet()) 
+		{
+			String key = entry.getKey();
+			WordEntity entity = entry.getValue();
+			WordEntity dictEntity = posDict.get(key);
+			if(entity != null && dictEntity != null)
+			{
+				svm += String.format(" %d:%d", dictEntity.Index, entity.Count);
+			}
+		}
+		
 		svm += " # ";
 		for (Map.Entry<String, WordEntity> entry: wordsOfLine.entrySet()) 
 		{
 			svm += entry.getKey() + " ";
 		}
+		for (Map.Entry<String, WordEntity> entry: posOfLine.entrySet()) 
+		{
+			svm += entry.getKey() + " ";
+		}		
 		svm = svm.replace('\n', ' ');
 		svm = svm.replaceAll("\n", "");
 		return svm;

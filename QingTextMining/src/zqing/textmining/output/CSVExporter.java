@@ -1,7 +1,13 @@
 package zqing.textmining.output;
 
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.OutputStreamWriter;
 import java.util.TreeMap;
 
@@ -25,22 +31,32 @@ public class CSVExporter extends BaseExporter
 	 */
 	public boolean ExportLines(String fileName, String[] lines)
 	{
+		ExportLines(fileName, lines, false);
+		return true;
+	}
+
+	public boolean ExportLines(String fileName, String[] lines, boolean bAppend)
+	{
 		try
 		{
-			OutputStreamWriter fileWriter = new OutputStreamWriter(new FileOutputStream(fileName), "GB2312");
-			BufferedWriter bufferWriter = new BufferedWriter(fileWriter);
+			BufferedWriter bufferWriter = Files.newBufferedWriter(Paths.get(fileName), Charset.forName("UTF8"), 
+	                StandardOpenOption.WRITE, 
+	                bAppend? StandardOpenOption.APPEND : StandardOpenOption.TRUNCATE_EXISTING,
+	                StandardOpenOption.CREATE);
 			for (String s : lines)
 			{
 				bufferWriter.write(s + "\n");
 			}
 			bufferWriter.close();
-		} catch (Exception e)
+		}
+		catch (Exception e)
 		{
 			System.out.println("写输出文件错误");
 			e.printStackTrace();
 		}
 		return true;
 	}
+	
 
 	/*
 	 * 输出词统计矩阵到CSV文件

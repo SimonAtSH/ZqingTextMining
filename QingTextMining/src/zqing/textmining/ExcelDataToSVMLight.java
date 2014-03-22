@@ -35,14 +35,13 @@ public class ExcelDataToSVMLight
 			CWSTagger cwsTag = new CWSTagger("./models/seg.m", new edu.fudan.ml.types.Dictionary("./models/dict.txt"));
 			// Bool值指定该dict是否用于cws分词（分词和词性可以使用不同的词典）// true就替换了之前的dict.txt
 			DebugLog.Log("Initiating POSTagger");
-			POSTagger ptag = new POSTagger(cwsTag, "models/pos.m", new edu.fudan.ml.types.Dictionary("./models/dict.txt"), true); 
+			POSTagger ptag = new POSTagger(cwsTag, "./models/pos.m", new edu.fudan.ml.types.Dictionary("./models/dict.txt"), true); 
 			ptag.removeDictionary(false);// 不移除分词的词典
 			ptag.setDictionary(new edu.fudan.ml.types.Dictionary("./models/dict.txt"), false);// 设置POS词典，分词使用原来设置
 
 			//对全文分词并标注词性
 			DebugLog.Log("POSTagger开始对全文进行分词和词性标注。");
-			String[][] wordsAndPos = ptag.tag2Array(strConnectedTxt);
-			String[] words = wordsAndPos[0];
+			String[][] wordsAndPos = ptag.tag2Array(strConnectedTxt);			
 			
 			//添加附加词性，符号等
 			//DebugLog.Log("添加附加词性，符号，特殊符号等。");			
@@ -51,19 +50,25 @@ public class ExcelDataToSVMLight
 			// 生成词典
 			DebugLog.Log("开始生成词典。");			
 			TreeMap<String, WordEntity> wordsDict = new TreeMap<String, WordEntity>();
-			// 统计各个词的词频
-			wordsDict = txtMining.GetWordsDict(words, wordsDict);
-			// 统计各个词性的数量
-			wordsDict = txtMining.GetWordsDict(txtMining.AddtionalWords, wordsDict, 0);
-			wordsDict = txtMining.GetWordsDict(wordsAndPos[1], wordsDict, 1);
+			wordsDict = txtMining.GetWordsDict(wordsAndPos[0], wordsDict);
+
+			// 生成词性的词典
+			TreeMap<String, WordEntity> posDict = new TreeMap<String, WordEntity>();
+			posDict = txtMining.GetWordsDict(txtMining.AddtionalWords, posDict, 0);
+			posDict = txtMining.GetWordsDict(wordsAndPos[1], posDict, 1);
 			DebugLog.Log("词典生成完毕。");
 
+			// 将词典写入Words.txt文件中
 			Set<String> wordsSet = wordsDict.keySet();			
 			String[] wordsArray = wordsSet.toArray(new String[0]);
-
-			// 将统计的词写入Words文件中
 			CSVExporter csvExport = new CSVExporter();
 			csvExport.ExportLines(cfg.ResultFolder + "/words.txt", wordsArray);
+			
+			//将词性也写入Words.txt文件中。
+			Set<String> posSet = posDict.keySet();
+			String[] posArray = posSet.toArray(new String[0]);
+			csvExport.ExportLines(cfg.ResultFolder + "/words.txt", posArray, true); //Append的方式追加。
+			
 			DebugLog.Log(String.format("输出词典到%s完成。", cfg.ResultFolder + "/words.txt"));
 			
 			// 输出好词典文件后，设定wordsDict中每个key对应于词典的索引id。
@@ -73,11 +78,17 @@ public class ExcelDataToSVMLight
 				WordEntity w = wordsDict.get(s);
 				w.Index = index++;
 			}
+			for(String s: posArray)
+			{
+				WordEntity w = posDict.get(s);
+				w.Index = index++;
+			}
 			
 			DebugLog.Log("开始生成SVM数据。");
 			String[][] signedLines = excelReader.GetFieldsBySheet(0);
 			ArrayList<String> svmLines = new ArrayList<String>();
 			TreeMap<String, WordEntity> wordsMap = new TreeMap<String, WordEntity>();
+			TreeMap<String, WordEntity> posMap = new TreeMap<String, WordEntity>();
 			String motion = "0";
 			for(int i=0; i < strArraySrcLines.length; i++)
 			{
@@ -85,13 +96,15 @@ public class ExcelDataToSVMLight
 				String[][] wps = ptag.tag2Array(signedLines[i][1]);
 				if(wps == null)
 					continue;
-				wordsMap.clear();
 				// 统计词频
+				wordsMap.clear();				
 				wordsMap = txtMining.GetWordsDict(wps[0], wordsMap);
-				// 统计词性出现次数
-				wordsMap = txtMining.GetWordsDict(wps[1], wordsMap);
 				
-				String svm = txtMining.GenerateSVMLine(motion,wordsMap, wordsDict);
+				// 统计词性出现次数
+				posMap.clear();
+				posMap = txtMining.GetWordsDict(wps[1], posMap);
+				
+				String svm = txtMining.GenerateSVMLine(motion,wordsMap, posMap, wordsDict, posDict);
 				svmLines.add(svm);
 			}
 			
