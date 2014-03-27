@@ -1,11 +1,16 @@
 ﻿package zqing.textmining;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 
 import edu.fudan.nlp.cn.tag.CWSTagger;
 import edu.fudan.nlp.cn.tag.POSTagger;
+import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.ling.Sentence;
+import edu.stanford.nlp.parser.lexparser.LexicalizedParser;
+import edu.stanford.nlp.trees.Tree;
 import zqing.textmining.config.Configuration;
 import zqing.textmining.entity.WordEntity;
 import zqing.textmining.input.ExcelReader;
@@ -114,6 +119,18 @@ public class ExcelDataToSVMLight
 			
 			csvExport.ExportLines(cfg.ResultFolder + "/train.txt", svmLines.toArray(new String[0]));
 			DebugLog.Log(String.format("导出SVM数据%s完毕", cfg.ResultFolder + "/train.txt"));
+
+			//使用Stanford parser对分词后的语句建立依赖树关系。
+			LexicalizedParser lp = LexicalizedParser.loadModel("edu/stanford/nlp/models/lexparser/chinesePCFG.ser.gz");
+			for(int i=0; i<strArraySrcLines.length; i++)
+			{
+				String[][] wps = ptag.tag2Array(signedLines[i][1]);
+				List<CoreLabel> rawWords = Sentence.toCoreLabelList(wps[0]);
+				Tree parse = lp.apply(rawWords);
+				parse.pennPrint();
+				DebugLog.Log("------------------------------");
+			}
+			DebugLog.Log("依赖树分析完毕。");
 
 		} catch (Exception e)
 		{
