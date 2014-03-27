@@ -1,4 +1,4 @@
-package zqing.textmining.output;
+﻿package zqing.textmining.output;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

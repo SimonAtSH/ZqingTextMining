@@ -1,4 +1,4 @@
-package zqing.textmining.input;
+ï»¿package zqing.textmining.input;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -34,13 +34,13 @@ public class CSVReader extends BaseReader
 			bufferReader = new BufferedReader(fileReader);
 			Lines = new ArrayList<String>();
 			FieldsList = new ArrayList<ArrayList<String>>();
-			// ¶ÁÈ¡Ò»ĞĞ
+			// è¯»å–ä¸€è¡Œ
 			while ((strLine = bufferReader.readLine()) != null)
 			{
 				Lines.add(strLine);				
-				ArrayList<String> cells = new ArrayList<String>();// Ã¿ĞĞ¼ÇÂ¼Ò»¸ölist
+				ArrayList<String> cells = new ArrayList<String>();// æ¯è¡Œè®°å½•ä¸€ä¸ªlist
 				String[] cs =  strLine.split("\t");
-				// ¶ÁÈ¡Ã¿¸öµ¥Ôª¸ñ
+				// è¯»å–æ¯ä¸ªå•å…ƒæ ¼
 				for(String s:cs)
 				{
 					cells.add(s);
@@ -49,7 +49,7 @@ public class CSVReader extends BaseReader
 				if(cells.size()>ColumnCount) ColumnCount = cells.size();
 			}
 			RowCount = FieldsList.size();
-			//½«ArrayList<ArrayList<String>> ×ª»¯ÎªString[][]£¬ÒÔ·½±ãÊ¹ÓÃ¸÷¸ö×Ö¶ÎµÄÖµ¡£
+			//å°†ArrayList<ArrayList<String>> è½¬åŒ–ä¸ºString[][]ï¼Œä»¥æ–¹ä¾¿ä½¿ç”¨å„ä¸ªå­—æ®µçš„å€¼ã€‚
 			Fields = new String[RowCount][ColumnCount];
 			for(int i = 0; i < RowCount; i++)
 			{
@@ -62,7 +62,7 @@ public class CSVReader extends BaseReader
 			}			
 		} catch (IOException e)
 		{
-			System.out.println("¶ÁÊäÈëÎÄ¼ş´íÎó:" + fileName);
+			System.out.println("è¯»è¾“å…¥æ–‡ä»¶é”™è¯¯:" + fileName);
 			e.printStackTrace();
 		} finally
 		{

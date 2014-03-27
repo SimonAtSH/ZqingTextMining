@@ -1,4 +1,4 @@
-package zqing.textmining.output;
+ï»¿package zqing.textmining.output;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,7 +55,7 @@ public class ExcelExporter extends BaseExporter
 				sheet.addCell(label);
 				i++;
 			}
-			// Ğ´ÈëÊı¾İ
+			// å†™å…¥æ•°æ®
 			book.write();
 		} catch (IOException e)
 		{

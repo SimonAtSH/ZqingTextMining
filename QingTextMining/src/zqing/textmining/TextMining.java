@@ -1,4 +1,4 @@
-package zqing.textmining;
+﻿package zqing.textmining;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -13,43 +13,43 @@ public class TextMining
 	}
 	
 	public String[] AddtionalWords = {
-			"���ݴ�",
-			"����", 
-			"����", 
-			"����", 
-			"���", 
-			"ʱ�����", 
-			"��", 
-			"��", 
+			"形容词",
+			"名词", 
+			"复词", 
+			"动词", 
+			"介词", 
+			"时间短语", 
+			"！", 
+			"？", 
 			"\\\\", 
 			"#", 
-			"����"};
+			"字数"};
 
 	/*
-	 * ��Щ����ĩβ�Զ��Ž�β����һ��ת�����µ�һ�У����ʾ���Ӳ�û�н���������Ҫ�������������ı��ϲ�Ϊһ�С�
-	 * �������ӣ�
-	 *10770977135	2137901025	����Ѫ�쵰����7����������7.5�����ԣ�ǧ�����Ƶ�̫�ϸ񣬶���Ҫ�ر�ע����û�е�Ѫ�ǣ���û���Ļš�������ͷ�Ρ����������Σ���Щȫ���ǵ�Ѫ�ǵı��֡�   �����ˣ�Ҫ�ر�ע���ⷽ������ݡ�   ���ΰ���ԡ����ϰ鼸��ǰ��������򲡣�����ÿһ����ö���˫�ң���������һ����Ѫ��7���ڣ�
-	 *10770985953	2137901025	������֮ǰ�и�Ѫѹ�����ಡ��Ѫѹ��ѹ120����ѹ80���������ϳ������ಡ����������60�꣬���ʷ�ҩ����ʳ����Ӧ����ε�����   ���ΰ�������ֲ��֣�����Ƚ��֣�Ŀǰ�����ҩ�����ĺô��ǳ��ࡣ��Ϊ����˫�����Ѿ����˺ü�ʮ���ҩ��ҽ�������Ƚ��˽⣬�ǳ���ȫ��һ��ҩ�����Ҳ��������Ѫ�ǣ�
-	 *10770990895	2137901025	��������������أ���������ֵ�����˵�Ƿǳ����ʵ�һ��ҩ�������ҩҲ����ʧЧ�����������ҩ������������򲡾Ϳ��԰�Ѫ�ǿ��ƺܺã�����������Ѫ�ǡ����ԣ�������˵�ǳ���ȫ��һ��ҩ�����Ҽ۸�Ҳ����̫���������������Զ���˫�ң�
-	 *10770995535	2137901025	����������ʣ�Ŀǰ��Ѫ��ˮƽ���ͺ�Ѫ��Ӧ��Ҳ��һ��������Ѫ����ô������������ö���˫�Ҿ��ܰ�Ѫ�ǿ��ƺã����Ƿǳ��õ�һ��������   �������Ų��̵��ӳ�����������˫�ҿ��ܲ��У���Ҫ�ӱ��ҩ���͵�������ҩ��������ҩ��ʱ��Ҫ�ر�ע�����˫�ҵĻ������ټ���һ��ҩ�����п��ܲ�����Ѫ�ǡ�
+	 * 有些句子末尾以逗号结尾，下一句转到了新的一行，这表示句子并没有结束。所以要把这样的两行文本合并为一行。
+	 * 如下例子：
+	 *10770977135	2137901025	糖溶血红蛋白在7左右甚至到7.5都可以，千万别控制得太严格，而且要特别注意有没有低血糖，有没有心慌、出汗、头晕、晚上做恶梦，这些全都是低血糖的表现。   主持人：要特别注意这方面的内容。   李光伟：对。我老伴几年前查出有糖尿病，现在每一天服用二甲双胍，早中晚各一粒，血糖7以内，
+	 *10770985953	2137901025	患糖尿病之前有高血压、心脏病，血压高压120，低压80，但是晚上常有心脏病发生。今年60岁，请问服药和饮食方面应该如何调理？   李光伟：看他胖不胖，如果比较胖，目前用这个药对他的好处非常多。因为二甲双胍是已经用了好几十年的药，医生对它比较了解，非常安全的一个药，而且不会产生低血糖，
+	 *10770990895	2137901025	还会帮助减轻体重，对于相对胖的人来说是非常合适的一个药。而这个药也不会失效，单独用这个药，对于轻的糖尿病就可以把血糖控制很好，还不产生低血糖。所以，总体来说非常安全的一个药，而且价格也不是太贵。像这个病人如果吃二甲双胍，
+	 *10770995535	2137901025	如果剂量合适，目前的血糖水平，餐后血糖应该也查一个，看看血糖怎么样。如果单独用二甲双胍就能把血糖控制好，这是非常好的一个方案。   但是随着病程的延长，单靠二甲双胍可能不行，还要加别的药，就得联合用药。联合用药的时候要特别注意二甲双胍的基础上再加上一个药，就有可能产生低血糖。
 	 */
 	public String[] ConnectBrokenLines(String[] srcLines)
 	{
 		String strAll = new String();
 		for(String s:srcLines)
 		{
-			if(!s.trim().isEmpty())	//ȥ������
+			if(!s.trim().isEmpty())	//去掉空行
 				strAll += s + "\n";
 		}
 		
-		strAll = strAll.replaceAll(",\n", ",");		// �滻Ӣ�Ķ��Ż���
-		strAll = strAll.replaceAll("��\n", "��" );	// �滻���Ķ��Ż���	
+		strAll = strAll.replaceAll(",\n", ",");		// 替换英文逗号换行
+		strAll = strAll.replaceAll("，\n", "，" );	// 替换中文逗号换行	
 		String[] destLines = strAll.split("\n");		
 		return destLines;
 	}
 	
 	/*
-	 * �����е��ı�������Ϊһ��String���������жϾ�
+	 * 把所有的文本行连接为一个String，用来进行断句
 	 */
 	
 	public String GetConnectedString(String[] srcLines)
@@ -117,7 +117,7 @@ public class TextMining
 			TreeMap<String, WordEntity> wordsDict, TreeMap<String, WordEntity> posDict)
 	{
 		String svm = motion;
-		//����ʻ㲿��
+		//构造词汇部分
 		for (Map.Entry<String, WordEntity> entry: wordsOfLine.entrySet()) 
 		{
 			String key = entry.getKey();
@@ -128,7 +128,7 @@ public class TextMining
 				svm += String.format(" %d:%d", dictEntity.Index, entity.Count);
 			}
 		}
-		//������Բ���
+		//构造词性部分
 		for (Map.Entry<String, WordEntity> entry: posOfLine.entrySet()) 
 		{
 			String key = entry.getKey();
@@ -153,5 +153,7 @@ public class TextMining
 		svm = svm.replaceAll("\n", "");
 		return svm;
 	}
+	
+	
 
 }

@@ -1,4 +1,4 @@
-package zqing.textmining.config;
+﻿package zqing.textmining.config;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -70,8 +70,9 @@ public class Configuration implements Serializable
 		}
 	}
 
-	public void ParseArgs(String[] args)
+	public boolean ParseArgs(String[] args)
 	{
+		boolean bResult = true;
 		for (int i = 0; i < args.length; i++)
 		{
 			if (args[i].equalsIgnoreCase("-In") )
@@ -92,6 +93,12 @@ public class Configuration implements Serializable
 				this.ResultFolder = args[i+1];
 			}
 		}
+		
+		if(this.SourceExcelFileName.isEmpty() && this.SourceFileName.isEmpty())
+			bResult = false;
+		if(this.ResultFolder.isEmpty())
+			bResult = false;
+		return bResult;
 	}
 
 }

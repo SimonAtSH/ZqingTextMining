@@ -1,4 +1,4 @@
-package zqing.textmining;
+ï»¿package zqing.textmining;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -21,57 +21,58 @@ public class ExcelDataToSVMLight
 		try
 		{
 			Configuration cfg = Configuration.getInstance();
-			cfg.ParseArgs(args); // ½âÎöÊäÈë²ÎÊı£¬½«²ÎÊıĞÅÏ¢·ÅÈëConfigurationµ¥ÀıÖĞ¡£
+			if(!cfg.ParseArgs(args))
+				return; // è§£æè¾“å…¥å‚æ•°ï¼Œå°†å‚æ•°ä¿¡æ¯æ”¾å…¥Configurationå•ä¾‹ä¸­ã€‚
 			TextMining txtMining = new TextMining();
 			ExcelReader excelReader = new ExcelReader(cfg.SourceExcelFileName);
 
-			// »ñµÃExcelµÄµÚ¶şÁĞµÄÎÄ±¾Êı¾İ¡£
+			// è·å¾—Excelçš„ç¬¬äºŒåˆ—çš„æ–‡æœ¬æ•°æ®ã€‚
 			String[] strArraySrcLines = excelReader.GetFieldsByColumn(1); 
 			for(int i=0; i<strArraySrcLines.length; i++)
-				strArraySrcLines[i] = strArraySrcLines[i].replaceAll("\n", ""); //Ö÷ÒªÊÇÓÃÀ´È¥µôÍøÖ·ºóÃæ¸úµÄÒ»¸ö\n
+				strArraySrcLines[i] = strArraySrcLines[i].replaceAll("\n", ""); //ä¸»è¦æ˜¯ç”¨æ¥å»æ‰ç½‘å€åé¢è·Ÿçš„ä¸€ä¸ª\n
 			String strConnectedTxt = txtMining.GetConnectedString(strArraySrcLines);
 			
 			DebugLog.Log("Initiating CWSTagger");
 			CWSTagger cwsTag = new CWSTagger("./models/seg.m", new edu.fudan.ml.types.Dictionary("./models/dict.txt"));
-			// BoolÖµÖ¸¶¨¸ÃdictÊÇ·ñÓÃÓÚcws·Ö´Ê£¨·Ö´ÊºÍ´ÊĞÔ¿ÉÒÔÊ¹ÓÃ²»Í¬µÄ´Êµä£©// true¾ÍÌæ»»ÁËÖ®Ç°µÄdict.txt
+			// Boolå€¼æŒ‡å®šè¯¥dictæ˜¯å¦ç”¨äºcwsåˆ†è¯ï¼ˆåˆ†è¯å’Œè¯æ€§å¯ä»¥ä½¿ç”¨ä¸åŒçš„è¯å…¸ï¼‰// trueå°±æ›¿æ¢äº†ä¹‹å‰çš„dict.txt
 			DebugLog.Log("Initiating POSTagger");
 			POSTagger ptag = new POSTagger(cwsTag, "./models/pos.m", new edu.fudan.ml.types.Dictionary("./models/dict.txt"), true); 
-			ptag.removeDictionary(false);// ²»ÒÆ³ı·Ö´ÊµÄ´Êµä
-			ptag.setDictionary(new edu.fudan.ml.types.Dictionary("./models/dict.txt"), false);// ÉèÖÃPOS´Êµä£¬·Ö´ÊÊ¹ÓÃÔ­À´ÉèÖÃ
+			ptag.removeDictionary(false);// ä¸ç§»é™¤åˆ†è¯çš„è¯å…¸
+			ptag.setDictionary(new edu.fudan.ml.types.Dictionary("./models/dict.txt"), false);// è®¾ç½®POSè¯å…¸ï¼Œåˆ†è¯ä½¿ç”¨åŸæ¥è®¾ç½®
 
-			//¶ÔÈ«ÎÄ·Ö´Ê²¢±ê×¢´ÊĞÔ
-			DebugLog.Log("POSTagger¿ªÊ¼¶ÔÈ«ÎÄ½øĞĞ·Ö´ÊºÍ´ÊĞÔ±ê×¢¡£");
+			//å¯¹å…¨æ–‡åˆ†è¯å¹¶æ ‡æ³¨è¯æ€§
+			DebugLog.Log("POSTaggerå¼€å§‹å¯¹å…¨æ–‡è¿›è¡Œåˆ†è¯å’Œè¯æ€§æ ‡æ³¨ã€‚");
 			String[][] wordsAndPos = ptag.tag2Array(strConnectedTxt);			
 			
-			//Ìí¼Ó¸½¼Ó´ÊĞÔ£¬·ûºÅµÈ
-			//DebugLog.Log("Ìí¼Ó¸½¼Ó´ÊĞÔ£¬·ûºÅ£¬ÌØÊâ·ûºÅµÈ¡£");			
+			//æ·»åŠ é™„åŠ è¯æ€§ï¼Œç¬¦å·ç­‰
+			//DebugLog.Log("æ·»åŠ é™„åŠ è¯æ€§ï¼Œç¬¦å·ï¼Œç‰¹æ®Šç¬¦å·ç­‰ã€‚");			
 			//words = txtMining.AddAddiontalWords(words);
 
-			// Éú³É´Êµä
-			DebugLog.Log("¿ªÊ¼Éú³É´Êµä¡£");			
+			// ç”Ÿæˆè¯å…¸
+			DebugLog.Log("å¼€å§‹ç”Ÿæˆè¯å…¸ã€‚");			
 			TreeMap<String, WordEntity> wordsDict = new TreeMap<String, WordEntity>();
 			wordsDict = txtMining.GetWordsDict(wordsAndPos[0], wordsDict);
 
-			// Éú³É´ÊĞÔµÄ´Êµä
+			// ç”Ÿæˆè¯æ€§çš„è¯å…¸
 			TreeMap<String, WordEntity> posDict = new TreeMap<String, WordEntity>();
 			posDict = txtMining.GetWordsDict(txtMining.AddtionalWords, posDict, 0);
 			posDict = txtMining.GetWordsDict(wordsAndPos[1], posDict, 1);
-			DebugLog.Log("´ÊµäÉú³ÉÍê±Ï¡£");
+			DebugLog.Log("è¯å…¸ç”Ÿæˆå®Œæ¯•ã€‚");
 
-			// ½«´ÊµäĞ´ÈëWords.txtÎÄ¼şÖĞ
+			// å°†è¯å…¸å†™å…¥Words.txtæ–‡ä»¶ä¸­
 			Set<String> wordsSet = wordsDict.keySet();			
 			String[] wordsArray = wordsSet.toArray(new String[0]);
 			CSVExporter csvExport = new CSVExporter();
 			csvExport.ExportLines(cfg.ResultFolder + "/words.txt", wordsArray);
 			
-			//½«´ÊĞÔÒ²Ğ´ÈëWords.txtÎÄ¼şÖĞ¡£
+			//å°†è¯æ€§ä¹Ÿå†™å…¥Words.txtæ–‡ä»¶ä¸­ã€‚
 			Set<String> posSet = posDict.keySet();
 			String[] posArray = posSet.toArray(new String[0]);
-			csvExport.ExportLines(cfg.ResultFolder + "/words.txt", posArray, true); //AppendµÄ·½Ê½×·¼Ó¡£
+			csvExport.ExportLines(cfg.ResultFolder + "/words.txt", posArray, true); //Appendçš„æ–¹å¼è¿½åŠ ã€‚
 			
-			DebugLog.Log(String.format("Êä³ö´Êµäµ½%sÍê³É¡£", cfg.ResultFolder + "/words.txt"));
+			DebugLog.Log(String.format("è¾“å‡ºè¯å…¸åˆ°%så®Œæˆã€‚", cfg.ResultFolder + "/words.txt"));
 			
-			// Êä³öºÃ´ÊµäÎÄ¼şºó£¬Éè¶¨wordsDictÖĞÃ¿¸ökey¶ÔÓ¦ÓÚ´ÊµäµÄË÷Òıid¡£
+			// è¾“å‡ºå¥½è¯å…¸æ–‡ä»¶åï¼Œè®¾å®šwordsDictä¸­æ¯ä¸ªkeyå¯¹åº”äºè¯å…¸çš„ç´¢å¼•idã€‚
 			int index = 0;
 			for(String s: wordsArray)
 			{
@@ -84,7 +85,7 @@ public class ExcelDataToSVMLight
 				w.Index = index++;
 			}			
 			
-			DebugLog.Log("¿ªÊ¼Éú³ÉSVMÊı¾İ¡£");
+			DebugLog.Log("å¼€å§‹ç”ŸæˆSVMæ•°æ®ã€‚");
 			String[][] signedLines = excelReader.GetFieldsBySheet(0);
 			ArrayList<String> svmLines = new ArrayList<String>();
 			TreeMap<String, WordEntity> wordsMap = new TreeMap<String, WordEntity>();
@@ -96,23 +97,23 @@ public class ExcelDataToSVMLight
 				String[][] wps = ptag.tag2Array(signedLines[i][1]);
 				if(wps == null)
 					continue;
-				// Í³¼Æ´ÊÆµ
+				// ç»Ÿè®¡è¯é¢‘
 				wordsMap.clear();				
 				wordsMap = txtMining.GetWordsDict(wps[0], wordsMap);
 				
-				// Í³¼Æ´ÊĞÔ³öÏÖ´ÎÊı
+				// ç»Ÿè®¡è¯æ€§å‡ºç°æ¬¡æ•°
 				posMap.clear();
 				posMap = txtMining.GetWordsDict(wps[1], posMap);
 
-				// ¼ÓÉÏ×ÖÊıÍ³¼Æ
-				posMap.put("×ÖÊı",  new WordEntity("×ÖÊı",signedLines[i][1].length()));
+				// åŠ ä¸Šå­—æ•°ç»Ÿè®¡
+				posMap.put("å­—æ•°",  new WordEntity("å­—æ•°",signedLines[i][1].length()));
 				
 				String svm = txtMining.GenerateSVMLine(motion,wordsMap, posMap, wordsDict, posDict);
 				svmLines.add(svm);
 			}
 			
 			csvExport.ExportLines(cfg.ResultFolder + "/train.txt", svmLines.toArray(new String[0]));
-			DebugLog.Log(String.format("µ¼³öSVMÊı¾İ%sÍê±Ï", cfg.ResultFolder + "/train.txt"));
+			DebugLog.Log(String.format("å¯¼å‡ºSVMæ•°æ®%så®Œæ¯•", cfg.ResultFolder + "/train.txt"));
 
 		} catch (Exception e)
 		{

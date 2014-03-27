@@ -1,14 +1,14 @@
-package zqing.textmining.entity;
+ï»¿package zqing.textmining.entity;
 
-//±£´æ´ÊµÄĞÅÏ¢
+//ä¿å­˜è¯çš„ä¿¡æ¯
 public class WordEntity
 {
-	public String	Text;	//´ÊµÄÄÚÈİ
-	public String	Type;	//´ÊµÄÊôĞÔ£¬Èç¶¯´Ê£¬Ãû´Ê£¬ĞÎÈİ´ÊµÈ
-	public long		Count;	//´ÊµÄÍ³¼ÆÊıÁ¿
-	public long 	Index;	//¸Ã´ÊÔÚ´ÊµäÖĞµÄË÷ÒıÎ»ÖÃ
-	public long		Possitive;	//´ÊµÄÕıÃæÇé¸ĞÖµ
-	public long		Negative;  //´ÊµÄ¸ºÃæÇé¸ĞÖµ
+	public String	Text;	//è¯çš„å†…å®¹
+	public String	Type;	//è¯çš„å±æ€§ï¼Œå¦‚åŠ¨è¯ï¼Œåè¯ï¼Œå½¢å®¹è¯ç­‰
+	public long		Count;	//è¯çš„ç»Ÿè®¡æ•°é‡
+	public long 	Index;	//è¯¥è¯åœ¨è¯å…¸ä¸­çš„ç´¢å¼•ä½ç½®
+	public long		Possitive;	//è¯çš„æ­£é¢æƒ…æ„Ÿå€¼
+	public long		Negative;  //è¯çš„è´Ÿé¢æƒ…æ„Ÿå€¼
 	
 	public WordEntity()
 	{

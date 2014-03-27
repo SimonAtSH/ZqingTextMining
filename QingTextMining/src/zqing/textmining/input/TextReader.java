@@ -1,4 +1,4 @@
-package zqing.textmining.input;
+﻿package zqing.textmining.input;
 
 public class TextReader extends BaseReader
 {

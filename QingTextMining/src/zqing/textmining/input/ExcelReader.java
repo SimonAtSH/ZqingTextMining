@@ -1,4 +1,4 @@
-package zqing.textmining.input;
+﻿package zqing.textmining.input;
 
 import java.io.File;
 import java.io.IOException;

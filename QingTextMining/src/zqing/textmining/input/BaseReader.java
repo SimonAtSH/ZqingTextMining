@@ -1,4 +1,4 @@
-package zqing.textmining.input;
+ï»¿package zqing.textmining.input;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -36,7 +36,7 @@ public class BaseReader
 			bufferReader.close();
 		} catch (IOException e)
 		{
-			System.out.println("¶ÁÊäÈëÎÄ¼ş´íÎó:" + fileName);
+			System.out.println("è¯»è¾“å…¥æ–‡ä»¶é”™è¯¯:" + fileName);
 			e.printStackTrace();
 		}
 		return true;

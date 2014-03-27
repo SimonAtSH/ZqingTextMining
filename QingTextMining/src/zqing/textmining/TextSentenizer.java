@@ -1,4 +1,4 @@
-package zqing.textmining;
+ï»¿package zqing.textmining;
 
 import edu.fudan.nlp.cn.Sentenizer;
 import zqing.textmining.config.Configuration;
@@ -13,7 +13,8 @@ public class TextSentenizer
 		try
 		{
 			Configuration cfg = Configuration.getInstance();
-			cfg.ParseArgs(args); // ½âÎöÊäÈë²ÎÊı£¬½«²ÎÊıĞÅÏ¢·ÅÈëConfigurationµ¥ÀıÖĞ¡£
+			if(!cfg.ParseArgs(args))
+				return; // è§£æè¾“å…¥å‚æ•°ï¼Œå°†å‚æ•°ä¿¡æ¯æ”¾å…¥Configurationå•ä¾‹ä¸­ã€‚
 			TextMining txtMining = new TextMining();
 
 			CSVReader csvReader = new CSVReader();
@@ -21,19 +22,19 @@ public class TextSentenizer
 			DebugLog.Log(bResult ? String.format("Load %s succeed.", cfg.SourceFileName) :
 				String.format("Load %s failed.", cfg.SourceFileName) );
 
-			String[] strArraySrcLines = csvReader.GetFieldsByColumn(2); // »ñµÃCSVÎÄ±¾µÄµÚ¶şÁĞµÄÎÄ±¾Êı¾İ¡£
+			String[] strArraySrcLines = csvReader.GetFieldsByColumn(2); // è·å¾—CSVæ–‡æœ¬çš„ç¬¬äºŒåˆ—çš„æ–‡æœ¬æ•°æ®ã€‚
 			strArraySrcLines = txtMining.ConnectBrokenLines(strArraySrcLines);
 			String strConnectedTxt = txtMining.GetConnectedString(strArraySrcLines);
 			
-			//ÓÃ¸´µ©ÓïÑÔ´¦Àí¿âÖĞµÄ¶Ï¾äµÄÀà½øĞĞ¶Ï¾ä
+			//ç”¨å¤æ—¦è¯­è¨€å¤„ç†åº“ä¸­çš„æ–­å¥çš„ç±»è¿›è¡Œæ–­å¥
 			Sentenizer.addPuncs('\n');
 			String[] txtLines = Sentenizer.split(strConnectedTxt);
-			DebugLog.Log("¶Ï¾äÍê³É.");
+			DebugLog.Log("æ–­å¥å®Œæˆ.");
 			
-			// Êä³ö¶Ï¾ä½á¹ûµ½TextLines.txt
+			// è¾“å‡ºæ–­å¥ç»“æœåˆ°TextLines.txt
 			CSVExporter csvExport = new CSVExporter();
 			csvExport.ExportLines(cfg.ResultFolder + "/TextLines.txt", txtLines);
-			DebugLog.Log(String.format("Êä³ö¶Ï¾ä½á¹ûµ½ %sÍê³É¡£", cfg.ResultFolder + "/TextLines.txt"));
+			DebugLog.Log(String.format("è¾“å‡ºæ–­å¥ç»“æœåˆ° %så®Œæˆã€‚", cfg.ResultFolder + "/TextLines.txt"));
 
 		} catch (Exception e)
 		{

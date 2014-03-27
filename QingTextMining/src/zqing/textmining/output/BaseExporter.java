@@ -1,4 +1,4 @@
-package zqing.textmining.output;
+﻿package zqing.textmining.output;
 
 public class BaseExporter
 {

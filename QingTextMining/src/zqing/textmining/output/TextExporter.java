@@ -1,4 +1,4 @@
-package zqing.textmining.output;
+ï»¿package zqing.textmining.output;
 
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
@@ -24,7 +24,7 @@ public class TextExporter extends BaseExporter
 			bwriter.close();
 		} catch (Exception e)
 		{
-			System.out.println("Ð´Êä³öÎÄ¼þ´íÎó");
+			System.out.println("å†™è¾“å‡ºæ–‡ä»¶é”™è¯¯");
 			e.printStackTrace();
 		}
 	}
@@ -42,7 +42,7 @@ public class TextExporter extends BaseExporter
 			bwriter.close();
 		} catch (Exception e)
 		{
-			System.out.println("Ð´Êä³öÎÄ¼þ´íÎó");
+			System.out.println("å†™è¾“å‡ºæ–‡ä»¶é”™è¯¯");
 			e.printStackTrace();
 		}
 	}

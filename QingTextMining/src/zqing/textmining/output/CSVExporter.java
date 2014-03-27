@@ -1,4 +1,4 @@
-package zqing.textmining.output;
+ï»¿package zqing.textmining.output;
 
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -23,7 +23,7 @@ public class CSVExporter extends BaseExporter
 //	private BufferedWriter		bufferWriter	= null;
 
 	/*
-	 * Êä³öÎÄ±¾ĞĞµ½CSVÎÄ¼ş
+	 * è¾“å‡ºæ–‡æœ¬è¡Œåˆ°CSVæ–‡ä»¶
 	 */
 	public boolean ExportLines(String fileName, String[] lines)
 	{
@@ -47,7 +47,7 @@ public class CSVExporter extends BaseExporter
 		}
 		catch (Exception e)
 		{
-			System.out.println("Ğ´Êä³öÎÄ¼ş´íÎó");
+			System.out.println("å†™è¾“å‡ºæ–‡ä»¶é”™è¯¯");
 			e.printStackTrace();
 		}
 		return true;
@@ -55,7 +55,7 @@ public class CSVExporter extends BaseExporter
 	
 
 	/*
-	 * Êä³ö´ÊÍ³¼Æ¾ØÕóµ½CSVÎÄ¼ş
+	 * è¾“å‡ºè¯ç»Ÿè®¡çŸ©é˜µåˆ°CSVæ–‡ä»¶
 	 */
 	public long ExportWords(TreeMap<String, WordEntity> words)
 	{
