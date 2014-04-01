@@ -10,7 +10,13 @@ import edu.fudan.nlp.cn.tag.POSTagger;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.Sentence;
 import edu.stanford.nlp.parser.lexparser.LexicalizedParser;
+import edu.stanford.nlp.trees.GrammaticalStructure;
+import edu.stanford.nlp.trees.GrammaticalStructureFactory;
+import edu.stanford.nlp.trees.PennTreebankLanguagePack;
 import edu.stanford.nlp.trees.Tree;
+import edu.stanford.nlp.trees.TreePrint;
+import edu.stanford.nlp.trees.TreebankLanguagePack;
+import edu.stanford.nlp.trees.TypedDependency;
 import zqing.textmining.config.Configuration;
 import zqing.textmining.entity.WordEntity;
 import zqing.textmining.input.ExcelReader;
@@ -122,13 +128,17 @@ public class ExcelDataToSVMLight
 
 			//使用Stanford parser对分词后的语句建立依赖树关系。
 			LexicalizedParser lp = LexicalizedParser.loadModel("edu/stanford/nlp/models/lexparser/chinesePCFG.ser.gz");
+			TreebankLanguagePack tlp = lp.getOp().langpack();
 			for(int i=0; i<strArraySrcLines.length; i++)
 			{
 				String[][] wps = ptag.tag2Array(signedLines[i][1]);
 				List<CoreLabel> rawWords = Sentence.toCoreLabelList(wps[0]);
 				Tree parse = lp.apply(rawWords);
-				parse.pennPrint();
+				
 				DebugLog.Log("------------------------------");
+
+				TreePrint tp = new TreePrint("typedDependencies", tlp);
+				tp.printTree(parse);
 			}
 			DebugLog.Log("依赖树分析完毕。");
 
