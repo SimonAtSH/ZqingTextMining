@@ -116,5 +116,34 @@ public class ExcelExporter extends BaseExporter
 		}
 		return true;
 	}
+	
+	public boolean ExportFields( String[][] words)
+	{
+		if ((book == null) || (sheet == null))
+		{
+			return false;
+		}
+
+		try
+		{
+			for(int iRow = 0; iRow < words.length; iRow++)
+				for(int iCol = 0; iCol < words[iRow].length; iCol++)
+				{
+					Label label = new Label(iCol, iRow, words[iRow][iCol]);
+					sheet.addCell(label);
+				}
+			book.write();
+		} catch (RowsExceededException e)
+		{
+			e.printStackTrace();
+		} catch (WriteException e)
+		{
+			e.printStackTrace();
+		} catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		return true;
+	}
 
 }

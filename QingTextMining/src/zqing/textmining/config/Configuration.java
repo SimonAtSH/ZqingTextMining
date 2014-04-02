@@ -16,6 +16,8 @@ public class Configuration implements Serializable
 	public String				SourceExcelFileName;
 	public String				ResultFileName;
 	public String 				ResultFolder;
+	public String				KeyDictFileName;
+	public String[] 			KeyDict = {"二甲双胍"};
 	public static String		Encode = "UTF-8";
 
 	private Configuration()
@@ -87,7 +89,10 @@ public class Configuration implements Serializable
 			{
 				this.ResultFileName = args[i + 1];
 			}
-			
+			if(args[i].equalsIgnoreCase("-KeyDict"))
+			{
+				this.KeyDictFileName = args[i + 1];
+			}
 			if(args[i].equalsIgnoreCase("-OutFolder") )
 			{
 				this.ResultFolder = args[i+1];

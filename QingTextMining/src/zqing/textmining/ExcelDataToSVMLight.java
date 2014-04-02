@@ -1,5 +1,7 @@
 ﻿package zqing.textmining;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -22,6 +24,7 @@ import zqing.textmining.entity.WordEntity;
 import zqing.textmining.input.ExcelReader;
 import zqing.textmining.output.CSVExporter;
 import zqing.textmining.output.DebugLog;
+import zqing.textmining.output.ExcelExporter;
 
 public class ExcelDataToSVMLight
 {
@@ -98,6 +101,7 @@ public class ExcelDataToSVMLight
 			
 			DebugLog.Log("开始生成SVM数据。");
 			String[][] signedLines = excelReader.GetFieldsBySheet(0);
+			
 			ArrayList<String> svmLines = new ArrayList<String>();
 			TreeMap<String, WordEntity> wordsMap = new TreeMap<String, WordEntity>();
 			TreeMap<String, WordEntity> posMap = new TreeMap<String, WordEntity>();
@@ -129,17 +133,42 @@ public class ExcelDataToSVMLight
 			//使用Stanford parser对分词后的语句建立依赖树关系。
 			LexicalizedParser lp = LexicalizedParser.loadModel("edu/stanford/nlp/models/lexparser/chinesePCFG.ser.gz");
 			TreebankLanguagePack tlp = lp.getOp().langpack();
+			TreePrint tp = new TreePrint("typedDependencies", tlp);
+			//输出极性，语句，和依赖树到strs中。
+			String[][] strs = new String[strArraySrcLines.length][3];
 			for(int i=0; i<strArraySrcLines.length; i++)
 			{
-				String[][] wps = ptag.tag2Array(signedLines[i][1]);
-				List<CoreLabel> rawWords = Sentence.toCoreLabelList(wps[0]);
-				Tree parse = lp.apply(rawWords);
-				
-				DebugLog.Log("------------------------------");
-
-				TreePrint tp = new TreePrint("typedDependencies", tlp);
-				tp.printTree(parse);
+				strs[i][0] = signedLines[i][0];
+				strs[i][1] = signedLines[i][1].replaceAll("\n", "");
+				strs[i][2] = "";
+				boolean bHasKey = false;
+				for (String k : cfg.KeyDict)
+				{
+					if (strs[i][1].indexOf(k) >= 0)
+					{
+						bHasKey = true;
+						break;
+					}
+				}
+				DebugLog.Log(String.format("%d %s %s", i, strs[i][0], strs[i][1]));
+				if(bHasKey)
+				{
+					String[][] wps = ptag.tag2Array(strs[i][1]);
+					List<CoreLabel> rawWords = Sentence.toCoreLabelList(wps[0]);
+					Tree parse = lp.apply(rawWords);
+					StringWriter stringWriter = new StringWriter();
+					PrintWriter writer = new PrintWriter(stringWriter); 
+					tp.printTree(parse,writer);
+					StringBuffer sb = stringWriter.getBuffer(); 
+					strs[i][2] = sb.toString();
+					strs[i][2] = strs[i][2].replaceAll("\n", "\r\n");
+					DebugLog.Log(strs[i][2]);
+				}
 			}
+			//输出结果到excel中
+			ExcelExporter xls = new ExcelExporter(cfg.ResultFolder + "/ParsedSentence.xls");			
+			xls.ExportFields(strs);
+			xls.Close();
 			DebugLog.Log("依赖树分析完毕。");
 
 		} catch (Exception e)
