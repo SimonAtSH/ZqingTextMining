@@ -140,17 +140,17 @@ public class TextMining
 			}
 		}
 		
-		svm += " # ";
-		for (Map.Entry<String, WordEntity> entry: wordsOfLine.entrySet()) 
-		{
-			svm += entry.getKey() + " ";
-		}
-		for (Map.Entry<String, WordEntity> entry: posOfLine.entrySet()) 
-		{
-			svm += entry.getKey() + " ";
-		}		
-		svm = svm.replace('\n', ' ');
-		svm = svm.replaceAll("\n", "");
+//		svm += " # ";
+//		for (Map.Entry<String, WordEntity> entry: wordsOfLine.entrySet()) 
+//		{
+//			svm += entry.getKey() + " ";
+//		}
+//		for (Map.Entry<String, WordEntity> entry: posOfLine.entrySet()) 
+//		{
+//			svm += entry.getKey() + " ";
+//		}		
+//		svm = svm.replace('\n', ' ');
+//		svm = svm.replaceAll("\n", "");
 		return svm;
 	}
 	

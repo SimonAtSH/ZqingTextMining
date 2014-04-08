@@ -16,6 +16,10 @@ public class Configuration implements Serializable
 	public String				SourceExcelFileName;
 	public String				ResultFileName;
 	public String 				ResultFolder;
+	public String				AllSVMFileName;
+	public String				TrainSVMFileName;
+	public String				TestSVMFileName;
+	public Boolean				GenerateDependencyTree = false;
 	public String				KeyDictFileName;
 	public String[] 			KeyDict = {"二甲双胍"};
 	public static String		Encode = "UTF-8";
@@ -96,6 +100,13 @@ public class Configuration implements Serializable
 			if(args[i].equalsIgnoreCase("-OutFolder") )
 			{
 				this.ResultFolder = args[i+1];
+				this.AllSVMFileName = this.ResultFolder + "/AllSVM.txt";
+				this.TrainSVMFileName = this.ResultFolder + "/Train.txt";
+				this.TestSVMFileName = this.ResultFolder + "/Test.txt";
+			}
+			if(args[i].equalsIgnoreCase("-DepTree") )
+			{
+				this.GenerateDependencyTree = true;
 			}
 		}
 		
