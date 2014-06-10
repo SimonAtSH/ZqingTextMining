@@ -1,5 +1,6 @@
 ﻿package zqing.textmining.config;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.Serializable;
@@ -12,16 +13,21 @@ public class Configuration implements Serializable
 	 * 
 	 */
 	private static final long	serialVersionUID	= 1L;
-	public String				SourceFileName;
-	public String				SourceExcelFileName;
-	public String				ResultFileName;
-	public String 				ResultFolder;
-	public String				AllSVMFileName;
-	public String				TrainSVMFileName;
-	public String				TestSVMFileName;
+	public String				SourceTextFileName = "";
+	public String				SourceExcelFileName = "";
+	public String				ResultFilePrefix = "";
+	public String				ResultFileName = "";
+	public String 				ResultFolder = "";
+	public String				TextLinesFileName = "";
+	public String				SubTextLinesFileName = "";
+	public String				DependencyTreeFileName = "";
+	public String				WordsTextFileName = "";
+	public String				AllSVMFileName = "";
+	public String				TrainSVMFileName = "";
+	public String				TestSVMFileName = "";
 	public Boolean				GenerateDependencyTree = false;
-	public String				KeyDictFileName;
-	public String[] 			KeyDict = {"二甲双胍"};
+	public String				KeyDictFileName = "";
+	public String[] 			KeyDict = {};
 	public static String		Encode = "UTF-8";
 
 	private Configuration()
@@ -66,7 +72,7 @@ public class Configuration implements Serializable
 			cfg = (Configuration) xStream.fromXML(flStream);
 			if (cfg != null)
 			{
-				this.SourceFileName = cfg.SourceFileName;
+				this.SourceTextFileName = cfg.SourceTextFileName;
 				this.ResultFileName = cfg.ResultFileName;
 				this.ResultFolder = cfg.ResultFolder;
 			}
@@ -75,19 +81,31 @@ public class Configuration implements Serializable
 			e.printStackTrace();
 		}
 	}
+	
+	private String GetFileNameNoExt(String fullName)
+	{
+		String strResult = null;
+		File userFile = new File(fullName);
+		String fileName = userFile.getName();
+		if(!fileName.isEmpty())
+			strResult = fileName.replaceFirst("[.][^.]+$", "");
+		return strResult;
+	}
 
 	public boolean ParseArgs(String[] args)
 	{
 		boolean bResult = true;
 		for (int i = 0; i < args.length; i++)
 		{
-			if (args[i].equalsIgnoreCase("-In") )
+			if (args[i].equalsIgnoreCase("-InText") )
 			{
-				this.SourceFileName = args[i + 1];
+				this.SourceTextFileName = args[i + 1];
+				this.ResultFilePrefix = GetFileNameNoExt(this.SourceTextFileName);
 			}
 			if (args[i].equalsIgnoreCase("-InExcel") )
 			{
 				this.SourceExcelFileName = args[i + 1];
+				this.ResultFilePrefix = GetFileNameNoExt(this.SourceExcelFileName);				
 			}
 			if (args[i].equalsIgnoreCase("-OUT") )
 			{
@@ -100,20 +118,21 @@ public class Configuration implements Serializable
 			if(args[i].equalsIgnoreCase("-OutFolder") )
 			{
 				this.ResultFolder = args[i+1];
-				this.AllSVMFileName = this.ResultFolder + "/AllSVM.txt";
-				this.TrainSVMFileName = this.ResultFolder + "/Train.txt";
-				this.TestSVMFileName = this.ResultFolder + "/Test.txt";
+				String tmpStr = this.ResultFolder + "/" + this.ResultFilePrefix;
+				this.AllSVMFileName = tmpStr + "_AllSVM.txt";
+				this.TrainSVMFileName = tmpStr + "_Train.txt";
+				this.TestSVMFileName = tmpStr + "_Test.txt";
+				this.TextLinesFileName = tmpStr + "_TextLines.txt";
+				this.SubTextLinesFileName = tmpStr + "_SubTextLines.txt";
+				this.DependencyTreeFileName = tmpStr + "_DependencyTree.xls";
+				this.WordsTextFileName = tmpStr + "_Words.Txt";
 			}
 			if(args[i].equalsIgnoreCase("-DepTree") )
 			{
 				this.GenerateDependencyTree = true;
 			}
 		}
-		
-		if(this.SourceExcelFileName.isEmpty() && this.SourceFileName.isEmpty())
-			bResult = false;
-		if(this.ResultFolder.isEmpty())
-			bResult = false;
+
 		return bResult;
 	}
 

@@ -19,8 +19,7 @@ public class CSVExporter extends BaseExporter
 
 	public int					RowCount;
 	public int					ColumnCount;
-//	private OutputStreamWriter	fileWriter		= null;
-//	private BufferedWriter		bufferWriter	= null;
+	private String[]	emptyStringArray = new String[]{};
 
 	/*
 	 * 输出文本行到CSV文件
@@ -30,8 +29,18 @@ public class CSVExporter extends BaseExporter
 		ExportLines(fileName, lines, false);
 		return true;
 	}
-
+	
 	public boolean ExportLines(String fileName, String[] lines, boolean bAppend)
+	{
+		return this.ExportLines(fileName, lines, bAppend, 0);
+	}
+	
+	public boolean ExportLines(String fileName, String[] lines, boolean bAppend, int minLineChars)
+	{
+		return this.ExportLines(fileName, lines, bAppend, minLineChars, emptyStringArray);
+	}
+
+	public boolean ExportLines(String fileName, String[] lines, boolean bAppend, int minLineChars, String[] ignorePrefix)
 	{
 		try
 		{
@@ -41,7 +50,26 @@ public class CSVExporter extends BaseExporter
 	                StandardOpenOption.CREATE);
 			for (String s : lines)
 			{
-				bufferWriter.write(s + "\n");
+				if(s.isEmpty()) continue;
+				if(s.length() < minLineChars) continue;
+				boolean bIgnore = false;
+				for(String ignorePrefixString : ignorePrefix)
+				{
+					if(s.startsWith(ignorePrefixString)) 
+					{
+						bIgnore = true;
+						break;
+					}
+				}
+				if(bIgnore) continue;
+				try
+				{
+					bufferWriter.write(s + "\r\n");
+				}
+				catch(Exception ex)
+				{
+					System.out.println("写某句话错误");
+				}
 			}
 			bufferWriter.close();
 		}

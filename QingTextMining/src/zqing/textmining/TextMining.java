@@ -1,9 +1,20 @@
 ﻿package zqing.textmining;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
+import edu.fudan.nlp.cn.tag.CWSTagger;
+import edu.fudan.nlp.cn.tag.POSTagger;
+import edu.stanford.nlp.trees.GrammaticalStructure;
+import edu.stanford.nlp.trees.GrammaticalStructureFactory;
+import edu.stanford.nlp.trees.Tree;
+import edu.stanford.nlp.trees.TypedDependency;
 import zqing.textmining.entity.WordEntity;
+import zqing.textmining.output.CSVExporter;
+import zqing.textmining.output.DebugLog;
 
 public class TextMining
 {
@@ -12,6 +23,9 @@ public class TextMining
 	{		
 	}
 	
+	/**
+	 * 附加词汇列表
+	 */
 	public String[] AddtionalWords = {
 			"形容词",
 			"名词", 
@@ -48,10 +62,11 @@ public class TextMining
 		return destLines;
 	}
 	
-	/*
+	/**
 	 * 把所有的文本行连接为一个String，用来进行断句
+	 * @param srcLines
+	 * @return
 	 */
-	
 	public String GetConnectedString(String[] srcLines)
 	{
 		StringBuilder sb = new StringBuilder();
@@ -62,6 +77,11 @@ public class TextMining
 		return sb.toString();
 	}
 	
+	/**
+	 * 添加词汇到附加词汇列表AddtionalWords
+	 * @param srcWords
+	 * @return
+	 */
 	public String[] AddAddiontalWords(String[] srcWords)
 	{
 		int iCount = srcWords.length + AddtionalWords.length;
@@ -74,25 +94,24 @@ public class TextMining
 		return destWords;
 	}
 	
+	/**
+	 * 从words[]数组中生成词典，并统计词的出现次数,初始是出现一次
+	 * @param words
+	 * @param wordsDict
+	 * @return
+	 */
 	public TreeMap<String, WordEntity> GetWordsDict(String[] words, TreeMap<String, WordEntity> wordsDict)
 	{
-		for (int i=0; i < words.length; i++)
-		{
-			if (!(words[i].trim().isEmpty()))
-			{
-				if (wordsDict.containsKey(words[i]))
-				{
-					WordEntity wEntity = wordsDict.get(words[i]);
-					wEntity.Count++;
-				} else
-				{
-					wordsDict.put(words[i], new WordEntity(words[i], 1));
-				}
-			}
-		}
-		return wordsDict;
+		return GetWordsDict(words, wordsDict, 1);
 	}
 	
+	/**
+	 * 从words[]数组中生成词典，并统计词的出现次数。
+	 * @param words
+	 * @param wordsDict
+	 * @param defaultCount
+	 * @return
+	 */
 	public TreeMap<String, WordEntity> GetWordsDict(String[] words, TreeMap<String, WordEntity> wordsDict, int defaultCount)
 	{
 		for (int i=0; i < words.length; i++)
@@ -112,6 +131,15 @@ public class TextMining
 		return wordsDict;
 	}	
 	
+	/**
+	 * 用来生成SVM格式的数据
+	 * @param motion 情感极性值
+	 * @param wordsOfLine	一句话分词并统计词频后得到的词典
+	 * @param posOfLine		词性划分之后得到的对应的每个词的词性词典
+	 * @param wordsDict		总的文章的分词后的词典
+	 * @param posDict	总的文章的词性划分后的词性词典
+	 * @return
+	 */
 	public String GenerateSVMLine(String motion, 
 			TreeMap<String, WordEntity> wordsOfLine, TreeMap<String, WordEntity> posOfLine,
 			TreeMap<String, WordEntity> wordsDict, TreeMap<String, WordEntity> posDict)
@@ -139,21 +167,99 @@ public class TextMining
 				svm += String.format(" %d:%d", dictEntity.Index, entity.Count);
 			}
 		}
-		
-//		svm += " # ";
-//		for (Map.Entry<String, WordEntity> entry: wordsOfLine.entrySet()) 
-//		{
-//			svm += entry.getKey() + " ";
-//		}
-//		for (Map.Entry<String, WordEntity> entry: posOfLine.entrySet()) 
-//		{
-//			svm += entry.getKey() + " ";
-//		}		
-//		svm = svm.replace('\n', ' ');
-//		svm = svm.replaceAll("\n", "");
 		return svm;
 	}
 	
-	
+	public POSTagger posTagger = null;
+	public TreeMap<String, WordEntity> wordsDict = null;
+	public TreeMap<String, WordEntity> posDict = null;
+	public boolean GenerateWordsDict(String strConnectedTxt, String WordsTextFileName)
+	{
+		boolean bResult = false;
+		try
+		{
+			DebugLog.Log("Initiating CWSTagger");
+			CWSTagger cwsTag;
+			cwsTag = new CWSTagger("./models/seg.m", new edu.fudan.ml.types.Dictionary("./models/dict.txt"));
+			DebugLog.Log("Initiating POSTagger");
+			// Bool值指定该词典是否用于cws分词（分词和词性可以使用不同的词典）// True就替换了之前的dict.txt
+			posTagger = new POSTagger(cwsTag, "./models/pos.m", new edu.fudan.ml.types.Dictionary("./models/dict.txt"),
+					true);
+			posTagger.removeDictionary(false);// 不移除分词的词典
+			posTagger.setDictionary(new edu.fudan.ml.types.Dictionary("./models/dict.txt"), false);// 设置POS词典，分词使用原来设置
+			// 对全文分词并标注词性
+			DebugLog.Log("POSTagger开始对全文进行分词和词性标注。");
+			String[][] wordsAndPos = posTagger.tag2Array(strConnectedTxt); // 全文分词，词性标注
 
+			// 生成词典
+			DebugLog.Log("开始生成词典。");
+			if(wordsDict == null)
+				wordsDict = new TreeMap<String, WordEntity>();
+			wordsDict = this.GetWordsDict(wordsAndPos[0], wordsDict);
+
+			// 生成词性的词典
+			if(posDict==null)
+				posDict = new TreeMap<String, WordEntity>();
+			posDict = this.GetWordsDict(this.AddtionalWords, posDict, 0);
+			posDict = this.GetWordsDict(wordsAndPos[1], posDict, 1);
+			DebugLog.Log("词典生成完毕。");
+
+			// 将词典写入Words.txt文件中
+			Set<String> wordsSet = wordsDict.keySet();
+			String[] wordsArray = wordsSet.toArray(new String[0]);
+			CSVExporter csvExport = new CSVExporter();
+			csvExport.ExportLines(WordsTextFileName, wordsArray);
+
+			// 将词性也写入Words.txt文件中。
+			Set<String> posSet = posDict.keySet();
+			String[] posArray = posSet.toArray(new String[0]);
+			csvExport.ExportLines(WordsTextFileName, posArray, true); // Append的方式追加。
+			DebugLog.Log(String.format("输出词典到%s完成。", WordsTextFileName));
+			
+			// 输出好词典文件后，设定wordsDict中每个key对应于词典的索引id。
+			int index = 0;
+			for (String s : wordsArray)
+			{
+				WordEntity w = wordsDict.get(s);
+				w.Index = index++;
+			}
+			// 设定词性对应于词典的索引ID
+			for (String s : posArray)
+			{
+				WordEntity w = posDict.get(s);
+				w.Index = index++;
+			}			
+			bResult = true;
+			
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+		}		
+		return bResult;
+	}
+	
+	public ArrayList<String> svmLines = new ArrayList<String>();
+	public ArrayList<String> trainList = new ArrayList<String>(); // Train 数据包含70%的SVM数据
+	public ArrayList<String> testList = new ArrayList<String>(); // Test 数据包含30%的SVM数据
+	public boolean GenerateSVMData(String[][] strExcelSrcData)
+	{
+		return true;
+	}
+	
+	public String GetDOTFromTree(Tree parse, GrammaticalStructureFactory gsf)
+	{
+		//生成Graphviz的DOT图形描述语言
+		StringBuilder dotStr = new StringBuilder();
+		GrammaticalStructure gs = gsf.newGrammaticalStructure(parse);
+		Collection<TypedDependency> tdl = gs.typedDependencies();	
+		dotStr.append("digraph g{\n edge [fontname=\"Simsun\"];\n node [fontname=\"SimSun\" size=\"16,16\"];\n{");
+		for(TypedDependency depObj :tdl)
+		{
+			dotStr.append(depObj.gov().label().value() + "->" + 
+						depObj.dep().label().value() + "[label=" + 
+						depObj.reln().toString() + "];\n");
+		}
+		dotStr.append("}\n}");
+		return dotStr.toString();
+	}
 }

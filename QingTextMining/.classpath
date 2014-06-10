@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
+	<classpathentry kind="lib" path="libs/commons-cli-1.2.jar"/>
+	<classpathentry kind="lib" path="libs/lucene-core-4.0.0.jar"/>
+	<classpathentry kind="lib" path="libs/lucene-queryparser-4.0.0.jar"/>
+	<classpathentry kind="lib" path="libs/trove.jar"/>
+	<classpathentry kind="lib" path="libs/jxl.jar"/>
+	<classpathentry kind="lib" path="libs/xstream-1.4.7.jar"/>
+	<classpathentry kind="lib" path="libs/fudannlp.20140305.jar" sourcepath="C:/works/simon/workspace/FudanNLP-1.6.1/src"/>
+	<classpathentry kind="lib" path="libs/stanford-chinese-corenlp-2013-11-12-models.jar"/>
+	<classpathentry kind="lib" path="libs/stanford-corenlp-3.3.1-models.jar"/>
+	<classpathentry kind="lib" path="libs/stanford-corenlp-3.3.1.jar" sourcepath="libs/stanford-corenlp-3.3.1-sources.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

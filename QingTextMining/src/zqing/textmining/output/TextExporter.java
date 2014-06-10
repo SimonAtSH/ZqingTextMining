@@ -13,7 +13,11 @@ public class TextExporter extends BaseExporter
 		super();
 		FileName = fileName;
 	}
-
+	public TextExporter()
+	{
+		super();
+	}
+	
 	public void Export(String fileName, String txt)
 	{
 		try
