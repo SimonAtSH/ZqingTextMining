@@ -1,18 +1,29 @@
 ﻿package zqing.textmining;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
 import edu.fudan.nlp.cn.tag.CWSTagger;
 import edu.fudan.nlp.cn.tag.POSTagger;
+import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.ling.Sentence;
+import edu.stanford.nlp.parser.lexparser.LexicalizedParser;
 import edu.stanford.nlp.trees.GrammaticalStructure;
 import edu.stanford.nlp.trees.GrammaticalStructureFactory;
 import edu.stanford.nlp.trees.Tree;
+import edu.stanford.nlp.trees.TreePrint;
+import edu.stanford.nlp.trees.TreebankLanguagePack;
 import edu.stanford.nlp.trees.TypedDependency;
 import zqing.textmining.entity.WordEntity;
+import zqing.textmining.input.CSVReader;
 import zqing.textmining.output.CSVExporter;
 import zqing.textmining.output.DebugLog;
 
@@ -171,6 +182,27 @@ public class TextMining
 	}
 	
 	public POSTagger posTagger = null;
+	public CWSTagger cwsTag = null;
+	public boolean InitTagger()
+	{
+		boolean bResult = true;
+		try
+		{
+			DebugLog.Log("Initiating CWSTagger");
+			cwsTag = new CWSTagger("./models/seg.m", new edu.fudan.ml.types.Dictionary("./models/MotionDict.txt"));
+			DebugLog.Log("Initiating POSTagger");
+			// Bool值指定该词典是否用于cws分词（分词和词性可以使用不同的词典）// True就替换了之前的dict.txt
+			posTagger = new POSTagger(cwsTag, "./models/pos.m", new edu.fudan.ml.types.Dictionary("./models/MotionDict.txt"), true);
+			posTagger.removeDictionary(false);// 不移除分词的词典
+			posTagger.setDictionary(new edu.fudan.ml.types.Dictionary("./models/MotionDict.txt"), false);// 设置POS词典，分词使用原来设置
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			bResult = false;
+		}
+		return bResult;	
+	}
+	
 	public TreeMap<String, WordEntity> wordsDict = null;
 	public TreeMap<String, WordEntity> posDict = null;
 	public boolean GenerateWordsDict(String strConnectedTxt, String WordsTextFileName)
@@ -178,15 +210,8 @@ public class TextMining
 		boolean bResult = false;
 		try
 		{
-			DebugLog.Log("Initiating CWSTagger");
-			CWSTagger cwsTag;
-			cwsTag = new CWSTagger("./models/seg.m", new edu.fudan.ml.types.Dictionary("./models/dict.txt"));
-			DebugLog.Log("Initiating POSTagger");
-			// Bool值指定该词典是否用于cws分词（分词和词性可以使用不同的词典）// True就替换了之前的dict.txt
-			posTagger = new POSTagger(cwsTag, "./models/pos.m", new edu.fudan.ml.types.Dictionary("./models/dict.txt"),
-					true);
-			posTagger.removeDictionary(false);// 不移除分词的词典
-			posTagger.setDictionary(new edu.fudan.ml.types.Dictionary("./models/dict.txt"), false);// 设置POS词典，分词使用原来设置
+			if((posTagger == null) || (cwsTag == null))
+				bResult = InitTagger();
 			// 对全文分词并标注词性
 			DebugLog.Log("POSTagger开始对全文进行分词和词性标注。");
 			String[][] wordsAndPos = posTagger.tag2Array(strConnectedTxt); // 全文分词，词性标注
@@ -238,13 +263,178 @@ public class TextMining
 		return bResult;
 	}
 	
-	public ArrayList<String> svmLines = new ArrayList<String>();
-	public ArrayList<String> trainList = new ArrayList<String>(); // Train 数据包含70%的SVM数据
-	public ArrayList<String> testList = new ArrayList<String>(); // Test 数据包含30%的SVM数据
-	public boolean GenerateSVMData(String[][] strExcelSrcData)
+	public boolean GenerateSVMData(String[] strTextLines, String[] strMotionValues, String AllSVMFileName, String TrainSVMFileName, String TestSVMFileName)
 	{
+		DebugLog.Log("开始生成SVM数据。");
+		ArrayList<String> svmLines = new ArrayList<String>();
+		ArrayList<String> trainList = new ArrayList<String>(); // Train 数据包含70%的SVM数据
+		ArrayList<String> testList = new ArrayList<String>(); // Test 数据包含30%的SVM数据		
+		
+		TreeMap<String, WordEntity> wordsMap = new TreeMap<String, WordEntity>(); // 用于对每句话进行分词后统计词频，生成统计结果
+		TreeMap<String, WordEntity> posMap = new TreeMap<String, WordEntity>(); // 用于对每句话进行词性标注后统计词性数量
+		String motion = "0"; // 句子情感极性
+		int[] MotionCount = new int[3]; // 根据极性分别统计
+		int[] testListFilter = { 3, 6, 9 }; // MotionCount[i]对10取模，然后取模结果在该数组中的话，该SVM语句就放在testList中。
+
+		// 开始对每句话进行分词，词性标注，统计词频，统计极性，生成TrainList和TestList
+		for (int i = 0; i < strTextLines.length; i++)
+		{
+			String[][] wps = this.posTagger.tag2Array(strTextLines[i]); // 分词并做词性标注
+			if (wps == null)
+				continue;
+
+			for (int j = 0; j < wps.length; j++)
+			{
+				// edu.fudan.nlp.cn.tag.CWSTagger分词后似乎会在网址后加上一个\n，所以这里要去掉它
+				wps[j][0] = wps[j][0].replaceAll("\n", "");
+			}
+
+			// 统计词频
+			wordsMap.clear();
+			wordsMap = this.GetWordsDict(wps[0], wordsMap);
+
+			// 统计词性出现次数
+			posMap.clear();
+			posMap = this.GetWordsDict(wps[1], posMap);
+
+			// 字数统计
+			posMap.put("字数", new WordEntity("字数", strTextLines[i].length()));
+
+			// 生成SVM数据
+			motion = strMotionValues[i]; // 极性
+			String svm = this.GenerateSVMLine(motion, wordsMap, posMap, this.wordsDict, this.posDict);
+			int iMo = Integer.parseInt(motion);
+			if (iMo == -1 || iMo == 0 || iMo == 1)
+			{
+				MotionCount[iMo + 1]++; // iMo+1等于0,1,2。那么MotionCount[0]..[2]分别存放iMo为-1,0,1的统计结果
+				int j = MotionCount[iMo + 1] % 10; // 对10取模
+				Boolean bInTest = false;
+				for (int k : testListFilter)
+				{
+					if (k == j)
+					{
+						bInTest = true;
+						break;
+					}
+				}
+				if (bInTest)
+				{
+					testList.add(svm);
+				} else
+				{
+					trainList.add(svm);
+				}
+			} else
+			{
+				DebugLog.Log(String.format("第 %d 行数据异常，句子极性为 %d 。", i, iMo));
+			}
+			svmLines.add(svm);
+		}
+		
+		CSVExporter csvExport = new CSVExporter();
+		csvExport.ExportLines(AllSVMFileName, svmLines.toArray(new String[0]));
+		DebugLog.Log(String.format("导出SVM数据%s完毕", AllSVMFileName));
+		csvExport.ExportLines(TrainSVMFileName, trainList.toArray(new String[0]));
+		DebugLog.Log(String.format("导出SVM数据%s完毕", TrainSVMFileName));
+		csvExport.ExportLines(TestSVMFileName, testList.toArray(new String[0]));
+		DebugLog.Log(String.format("导出SVM数据%s完毕", TestSVMFileName));
 		return true;
 	}
+	
+	public ArrayList<String[]> GenerateDepTreeAndDotLins(String[] strLines, String TreePrintType, String DependencyTreeFileName)
+	{
+		LexicalizedParser lp = LexicalizedParser.loadModel("edu/stanford/nlp/models/lexparser/chinesePCFG.ser.gz");
+		//LexicalizedParser lp = LexicalizedParser.loadModel("edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz");
+		TreebankLanguagePack tlp = lp.getOp().langpack();
+		TreePrint tp = new TreePrint(TreePrintType, tlp);
+		GrammaticalStructureFactory gsf = tlp.grammaticalStructureFactory();
+		// 输出极性，语句，和依赖树,和Graphviz的DOT图形描述到字符串数组中。
+		int iLines = strLines.length;
+		String[] strDepTrees = new String[iLines];
+		String[] strDotLines = new String[iLines];
+		for (int i = 0; i < iLines; i++)
+		{
+			DebugLog.Log(Integer.toString(i)); //
+			String[][] wps = this.posTagger.tag2Array(strLines[i]);
+			List<CoreLabel> rawWords = Sentence.toCoreLabelList(wps[0]);
+			Tree parse = lp.apply(rawWords);
+			StringWriter stringWriter = new StringWriter();
+			PrintWriter writer = new PrintWriter(stringWriter);
+			tp.printTree(parse, writer);
+			StringBuffer sb = stringWriter.getBuffer();
+			strDepTrees[i] = sb.toString();
+			strDotLines[i] = this.GetDOTFromTree(parse,gsf);
+			//DebugLog.Log(strDepTrees[i]); //不输出，提高处理速度
+		}
+		DebugLog.Log("输出依赖树分析结果完成。");
+		ArrayList<String[]> resultList = new ArrayList<String[]>();
+		resultList.add(strDepTrees);
+		resultList.add(strDotLines);
+		return resultList;
+	}
+	
+	
+	private HashSet<String> GetDictFromFile(String fileName, Integer initValue)
+	{
+		HashSet<String> dict = new HashSet<String>();
+		try
+		{
+			CSVReader reader = new CSVReader();
+			reader.LoadFromFile(fileName);
+			String[] words = reader.GetFieldsByColumn(0);
+			for(String s : words)
+			{
+				dict.add(s);
+			}
+		} catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		return dict;
+	}
+	
+	/**
+	 * 把传入的文本行进行分词，然后查找NTUSD_positive_simplified, 和NTUSD_negative_simplified，简单相加结果
+	 * 得到的作为文本极性Baseline数据
+	 * @param strExcelSrcData
+	 * @return
+	 */
+	public int[] GenerateMotionBaseLine(String[] strLines)
+	{
+		//1. 加载Pos，Neg极性词典
+		//2. 每句话分词
+		//3. 每个词匹配Pos，Neg词典，匹配结果相加得到每句话的极性值
+		//4. 输出极性值到excel表
+		if((posTagger == null) || (cwsTag == null))
+			InitTagger();
+		HashSet<String> posDict = GetDictFromFile("./models/NTUSD_positive_simplified.txt", 1);
+		HashSet<String> negDict = GetDictFromFile("./models/NTUSD_negative_simplified.txt", -1);
+		int iLines = strLines.length;
+		int[] resultArray = new int[iLines];
+		for(int i = 0; i < iLines; i++ )
+		{
+			String srcLine = strLines[i];
+			String[] words = this.cwsTag.tag2Array(srcLine);
+			int iMotion = 0;
+			for(int j = 0; j < words.length; j++)
+			{
+				if(posDict.contains(words[j]))
+				{
+					iMotion += 1;
+				}
+			}
+			for(int j = 0; j < words.length; j++)
+			{
+				if(negDict.contains(words[j]))
+				{
+					iMotion += -1;
+				}
+			}
+			resultArray[i] = iMotion;			
+		}
+		return resultArray;
+	}
+	
 	
 	public String GetDOTFromTree(Tree parse, GrammaticalStructureFactory gsf)
 	{

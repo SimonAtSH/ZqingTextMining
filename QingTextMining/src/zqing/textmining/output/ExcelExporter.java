@@ -117,6 +117,56 @@ public class ExcelExporter extends BaseExporter
 		return true;
 	}
 	
+	public boolean ExportColumn(int[] iWords, int iCol)
+	{
+		String[] words = new String[iWords.length];
+		for(int i = 0; i< iWords.length; i++)
+		{
+			words[i] = String.valueOf(iWords[i]);
+		}
+		return ExportColumn(words, iCol);	
+	}
+	
+	public boolean ExportColumn(String[] words, int iCol)
+	{
+		if ((book == null) || (sheet == null))
+		{
+			return false;
+		}
+
+		try
+		{
+			for(int iRow = 0; iRow < words.length; iRow++)
+			{
+				Label label = new Label(iCol, iRow, words[iRow]);
+				sheet.addCell(label);
+			}
+			//book.write();
+		} catch (RowsExceededException e)
+		{
+			e.printStackTrace();
+		} catch (WriteException e)
+		{
+			e.printStackTrace();
+//		} catch (IOException e)
+//		{
+//			e.printStackTrace();
+		}
+		return true;		
+	}
+	
+	public boolean Write()
+	{
+		try
+		{
+			book.write();
+		} catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		return true;
+	}
+	
 	public boolean ExportFields( String[][] words)
 	{
 		if ((book == null) || (sheet == null))
