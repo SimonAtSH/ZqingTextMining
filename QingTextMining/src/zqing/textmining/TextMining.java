@@ -452,4 +452,50 @@ public class TextMining
 		dotStr.append("}\n}");
 		return dotStr.toString();
 	}
+	
+	/**
+	 * 查找key在str中出现的次数
+	 * @param str
+	 * @param key
+	 * @return
+	 */
+	public int CountStringKeyNumber(String str, String key)
+	{
+		int count = 0;
+		for (String tmp = str; tmp != null && tmp.length() >= key.length();)
+		{
+			if (tmp.indexOf(key) == 0)
+			{
+				count++;
+				tmp = tmp.substring(key.length());
+			} else
+			{
+				tmp = tmp.substring(1);
+			}
+		}
+		return count;
+	}
+
+	/**
+	 * ?
+	 * @param strDepLines
+	 * @param relationsToFind
+	 * @return
+	 */
+	public int[] GetDepRelationCount(String[] strDepLines, String[] relationsToFind)
+	{
+		int iCount = strDepLines.length;
+		int[] depCounts = new int[iCount];
+		for (int i = 0; i < iCount; i++)
+		{
+			for (int j = 0; j < relationsToFind.length; j++)
+			{
+				if (j > 0)
+					depCounts[i] = depCounts[i] * CountStringKeyNumber(strDepLines[i], relationsToFind[j]);
+				else
+					depCounts[i] = CountStringKeyNumber(strDepLines[i], relationsToFind[j]);
+			}
+		}
+		return depCounts;
+	}
 }

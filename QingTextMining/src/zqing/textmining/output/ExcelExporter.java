@@ -117,17 +117,17 @@ public class ExcelExporter extends BaseExporter
 		return true;
 	}
 	
-	public boolean ExportColumn(int[] iWords, int iCol)
+	public boolean ExportColumn(int[] iWords, int iCol, String strHeader)
 	{
 		String[] words = new String[iWords.length];
 		for(int i = 0; i< iWords.length; i++)
 		{
 			words[i] = String.valueOf(iWords[i]);
 		}
-		return ExportColumn(words, iCol);	
+		return ExportColumn(words, iCol, strHeader);	
 	}
 	
-	public boolean ExportColumn(String[] words, int iCol)
+	public boolean ExportColumn(String[] words, int iCol, String strHeader)
 	{
 		if ((book == null) || (sheet == null))
 		{
@@ -136,21 +136,19 @@ public class ExcelExporter extends BaseExporter
 
 		try
 		{
+			Label lblHead = new Label(iCol, 0, strHeader);
+			sheet.addCell(lblHead);
 			for(int iRow = 0; iRow < words.length; iRow++)
 			{
-				Label label = new Label(iCol, iRow, words[iRow]);
+				Label label = new Label(iCol, iRow+1, words[iRow]);
 				sheet.addCell(label);
 			}
-			//book.write();
 		} catch (RowsExceededException e)
 		{
 			e.printStackTrace();
 		} catch (WriteException e)
 		{
 			e.printStackTrace();
-//		} catch (IOException e)
-//		{
-//			e.printStackTrace();
 		}
 		return true;		
 	}

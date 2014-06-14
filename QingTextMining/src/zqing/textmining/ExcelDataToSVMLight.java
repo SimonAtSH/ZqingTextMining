@@ -53,15 +53,22 @@ public class ExcelDataToSVMLight
 			}
 
 			// 句子分词，匹配极性词典，生成极性BaseLine
-			int[] baseMotions = txtMining.GenerateMotionBaseLine(strTextLines);
+			int[] baseMotions = txtMining.GenerateMotionBaseLine(strTextLines);			
+			int[] nsubjCounts = txtMining.GetDepRelationCount(strDepTrees, new String[]{"nsubj"});
+			int[] dobjCounts = txtMining.GetDepRelationCount(strDepTrees, new String[]{"dobj"});
+			int[] nsubjAnddobjCounts = txtMining.GetDepRelationCount(strDepTrees, new String[]{"nsubj","dobj"});
+			
 
 //			// 输出结果到excel中
 			ExcelExporter xls = new ExcelExporter(cfg.DependencyTreeFileName);
-			xls.ExportColumn(strMotionValues, 0);
-			xls.ExportColumn(strTextLines, 1);
-			xls.ExportColumn(strDepTrees, 2);
-			xls.ExportColumn(strDotLines, 3);
-			xls.ExportColumn(baseMotions, 4);			
+			xls.ExportColumn(strMotionValues, 0, "Motion");
+			xls.ExportColumn(strTextLines, 1, "Text");
+			xls.ExportColumn(strDepTrees, 2, "Dependenc");
+			xls.ExportColumn(strDotLines, 3, "Graphviz");
+			xls.ExportColumn(baseMotions, 4, "BaseLine");
+			xls.ExportColumn(nsubjCounts, 5, "nsubj");
+			xls.ExportColumn(dobjCounts, 6, "dobj");
+			xls.ExportColumn(nsubjAnddobjCounts, 7, "nsubj&dobj");
 			xls.Close();
 			DebugLog.Log(String.format("输出依赖树分析结果到 %s完成。", cfg.DependencyTreeFileName));	
 			DebugLog.Log("数据分析完毕。");
