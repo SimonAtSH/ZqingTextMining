@@ -10,10 +10,12 @@ import com.thoughtworks.xstream.XStream;
 public class Configuration implements Serializable
 {
 	/**
-	 * 
+	 * 配置变量
 	 */
 	private static final long	serialVersionUID	= 1L;
 	public String				SourceTextFileName = "";
+	public String				SourcePosTextFileName = "";
+	public String				SourceNegTextFileName = "";
 	public String				SourceExcelFileName = "";
 	public String				ResultFilePrefix = "";
 	public String				ResultFileName = "";
@@ -22,6 +24,7 @@ public class Configuration implements Serializable
 	public String				SubTextLinesFileName = "";
 	public String				DependencyTreeFileName = "";
 	public String				WordsTextFileName = "";
+	public String				BigramWordsTextFileName = "";
 	public String				AllSVMFileName = "";
 	public String				TrainSVMFileName = "";
 	public String				TestSVMFileName = "";
@@ -102,6 +105,16 @@ public class Configuration implements Serializable
 				this.SourceTextFileName = args[i + 1];
 				this.ResultFilePrefix = GetFileNameNoExt(this.SourceTextFileName);
 			}
+			if (args[i].equalsIgnoreCase("-InPosText") )
+			{
+				this.SourcePosTextFileName = args[i + 1];
+				this.ResultFilePrefix = GetFileNameNoExt(this.SourcePosTextFileName);
+			}
+			if (args[i].equalsIgnoreCase("-InNegText") )
+			{
+				this.SourceNegTextFileName = args[i + 1];
+				this.ResultFilePrefix = GetFileNameNoExt(this.SourceNegTextFileName);
+			}
 			if (args[i].equalsIgnoreCase("-InExcel") )
 			{
 				this.SourceExcelFileName = args[i + 1];
@@ -126,6 +139,7 @@ public class Configuration implements Serializable
 				this.SubTextLinesFileName = tmpStr + "_SubTextLines.txt";
 				this.DependencyTreeFileName = tmpStr + "_DependencyTree.xls";
 				this.WordsTextFileName = tmpStr + "_Words.Txt";
+				this.BigramWordsTextFileName = tmpStr + "_BigramWords.Txt";
 			}
 			if(args[i].equalsIgnoreCase("-DepTree") )
 			{

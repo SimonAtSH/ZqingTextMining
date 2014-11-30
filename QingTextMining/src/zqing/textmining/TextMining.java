@@ -106,11 +106,26 @@ public class TextMining
 	}
 	
 	/**
-	 * 从words[]数组中生成词典，并统计词的出现次数,初始是出现一次
+	 * 从words[]数组中生成二元词词典，并统计词的出现次数,初始是出现一次
 	 * @param words
 	 * @param wordsDict
 	 * @return
 	 */
+	public String[] GetBigramWordsArrayForOneLine(String[] words)
+	{
+		long wordsCount = words.length;
+		// 一个句子分为 a b c d 四个词后，那么两两合并，会组合成 ab bc cd 三个二元词
+		// 那么一个句子组合为二元词后数量应该为 wordsCount -1
+		// 这里只是考虑一句话单行的问题
+		String[] bigramWords = new String[(int) (wordsCount -1)];
+		for(int i = 0; i < (wordsCount-1); i++)
+		{
+			bigramWords[i] = words[i] + words[i+1];
+		}
+		return bigramWords;
+	}
+
+	
 	public TreeMap<String, WordEntity> GetWordsDict(String[] words, TreeMap<String, WordEntity> wordsDict)
 	{
 		return GetWordsDict(words, wordsDict, 1);
@@ -183,6 +198,10 @@ public class TextMining
 	
 	public POSTagger posTagger = null;
 	public CWSTagger cwsTag = null;
+	/**
+	 * 初始化分词工具CWSTagger和词性分词工具 POSTagger
+	 * @return
+	 */
 	public boolean InitTagger()
 	{
 		boolean bResult = true;
@@ -203,9 +222,9 @@ public class TextMining
 		return bResult;	
 	}
 	
-	public TreeMap<String, WordEntity> wordsDict = null;
-	public TreeMap<String, WordEntity> posDict = null;
-	public boolean GenerateWordsDict(String strConnectedTxt, String WordsTextFileName)
+	public TreeMap<String, WordEntity> unigramWordsDict = null; // 一元词 词典
+	public TreeMap<String, WordEntity> posDict = null;  // 词性词典
+	public boolean GenerateUnigramWordsDict(String strConnectedTxt, String WordsTextFileName)
 	{
 		boolean bResult = false;
 		try
@@ -218,9 +237,9 @@ public class TextMining
 
 			// 生成词典
 			DebugLog.Log("开始生成词典。");
-			if(wordsDict == null)
-				wordsDict = new TreeMap<String, WordEntity>();
-			wordsDict = this.GetWordsDict(wordsAndPos[0], wordsDict);
+			if(unigramWordsDict == null)
+				unigramWordsDict = new TreeMap<String, WordEntity>();
+			unigramWordsDict = this.GetWordsDict(wordsAndPos[0], unigramWordsDict);
 
 			// 生成词性的词典
 			if(posDict==null)
@@ -230,7 +249,7 @@ public class TextMining
 			DebugLog.Log("词典生成完毕。");
 
 			// 将词典写入Words.txt文件中
-			Set<String> wordsSet = wordsDict.keySet();
+			Set<String> wordsSet = unigramWordsDict.keySet();
 			String[] wordsArray = wordsSet.toArray(new String[0]);
 			CSVExporter csvExport = new CSVExporter();
 			csvExport.ExportLines(WordsTextFileName, wordsArray);
@@ -245,7 +264,7 @@ public class TextMining
 			int index = 0;
 			for (String s : wordsArray)
 			{
-				WordEntity w = wordsDict.get(s);
+				WordEntity w = unigramWordsDict.get(s);
 				w.Index = index++;
 			}
 			// 设定词性对应于词典的索引ID
@@ -254,6 +273,62 @@ public class TextMining
 				WordEntity w = posDict.get(s);
 				w.Index = index++;
 			}			
+			bResult = true;
+			
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+		}		
+		return bResult;
+	}
+
+	public TreeMap<String, WordEntity> bigramWordsDict = null; // 二元词 词典
+	/**
+	 * 生成二元词词典
+	 * @param strConnectedTxt
+	 * @param WordsTextFileName
+	 * @return
+	 */
+	public boolean GenerateBigramWordsDict(String strConnectedTxt, String WordsTextFileName)
+	{
+		boolean bResult = false;
+		try
+		{
+			if((posTagger == null) || (cwsTag == null))
+				bResult = InitTagger();
+			// 对全文分词并标注词性
+			DebugLog.Log("CWSTagger开始对全文进行分词。");
+			String[] unigramWordsArray = cwsTag.tag2Array(strConnectedTxt); // 全文一元词分词
+			DebugLog.Log("CWSTagger分词完毕。");
+			
+
+			// 生成二元词 词组
+			DebugLog.Log("两两合并生成二元词数组。");
+			String[] bigramWordsArray = this.GetBigramWordsArrayForOneLine(unigramWordsArray);
+
+			// 生成词典
+			DebugLog.Log("开始生成词典。");
+			if(bigramWordsDict == null)
+				bigramWordsDict = new TreeMap<String, WordEntity>();			
+			bigramWordsDict = this.GetWordsDict(bigramWordsArray, bigramWordsDict);
+
+			DebugLog.Log("词典生成完毕。");
+
+			// 将词典写入Words.txt文件中
+			Set<String> wordsSet = bigramWordsDict.keySet();
+			String[] wordsArray = wordsSet.toArray(new String[0]);
+			CSVExporter csvExport = new CSVExporter();
+			csvExport.ExportLines(WordsTextFileName, wordsArray);
+
+			DebugLog.Log(String.format("输出词典到%s完成。", WordsTextFileName));
+			
+			// 输出好词典文件后，设定wordsDict中每个key对应于词典的索引id。
+			int index = 0;
+			for (String s : wordsArray)
+			{
+				WordEntity w = bigramWordsDict.get(s);
+				w.Index = index++;
+			}
 			bResult = true;
 			
 		} catch (Exception e)
@@ -302,7 +377,7 @@ public class TextMining
 
 			// 生成SVM数据
 			motion = strMotionValues[i]; // 极性
-			String svm = this.GenerateSVMLine(motion, wordsMap, posMap, this.wordsDict, this.posDict);
+			String svm = this.GenerateSVMLine(motion, wordsMap, posMap, this.unigramWordsDict, this.posDict);
 			int iMo = Integer.parseInt(motion);
 			if (iMo == -1 || iMo == 0 || iMo == 1)
 			{
@@ -341,13 +416,44 @@ public class TextMining
 		return true;
 	}
 	
+	private LexicalizedParser lp = null;
+	private TreebankLanguagePack tlp = null;
+	private GrammaticalStructureFactory gsf = null;
+	private TreePrint tp = null;
+	public void InitDepTreeParser(String TreePrintType)
+	{
+		lp = LexicalizedParser.loadModel("edu/stanford/nlp/models/lexparser/chinesePCFG.ser.gz");
+		lp = LexicalizedParser.loadModel("edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz");
+		tlp = lp.getOp().langpack();
+		gsf = tlp.grammaticalStructureFactory();
+		tp = new TreePrint(TreePrintType, tlp);
+	}
+	
+	/**
+	 * 生成依赖树，在生成依赖树之前要先调用InitDepTreeParser()进行初始化
+	 * @param line
+	 * @return
+	 */
+	public String GetDepTree(String line)
+	{
+		if((lp == null) || (lp ==null) || (gsf == null))
+			return null;
+		String depTree = "";
+		String[][] wps = this.posTagger.tag2Array(line);
+		List<CoreLabel> rawWords = Sentence.toCoreLabelList(wps[0]);
+		Tree parse = lp.apply(rawWords);
+		StringWriter stringWriter = new StringWriter();
+		PrintWriter writer = new PrintWriter(stringWriter);
+		tp.printTree(parse, writer);
+		StringBuffer sb = stringWriter.getBuffer();
+		depTree = sb.toString();
+		return depTree;
+		
+	}
+	
 	public ArrayList<String[]> GenerateDepTreeAndDotLins(String[] strLines, String TreePrintType, String DependencyTreeFileName)
 	{
-		LexicalizedParser lp = LexicalizedParser.loadModel("edu/stanford/nlp/models/lexparser/chinesePCFG.ser.gz");
-		//LexicalizedParser lp = LexicalizedParser.loadModel("edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz");
-		TreebankLanguagePack tlp = lp.getOp().langpack();
-		TreePrint tp = new TreePrint(TreePrintType, tlp);
-		GrammaticalStructureFactory gsf = tlp.grammaticalStructureFactory();
+		InitDepTreeParser(TreePrintType);
 		// 输出极性，语句，和依赖树,和Graphviz的DOT图形描述到字符串数组中。
 		int iLines = strLines.length;
 		String[] strDepTrees = new String[iLines];

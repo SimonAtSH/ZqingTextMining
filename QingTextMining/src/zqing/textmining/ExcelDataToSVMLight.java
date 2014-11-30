@@ -35,7 +35,7 @@ public class ExcelDataToSVMLight
 			String strConnectedTxt = sbText.toString();
 			
 			//分词并进行词性标注，生成并输出词典到WordsTextFileName文件中
-			txtMining.GenerateWordsDict(strConnectedTxt, cfg.WordsTextFileName);
+			txtMining.GenerateUnigramWordsDict(strConnectedTxt, cfg.WordsTextFileName);
 			
 			//生成SVM数据
 			txtMining.GenerateSVMData(strTextLines, strMotionValues, cfg.AllSVMFileName,cfg.TrainSVMFileName, cfg.TestSVMFileName);
